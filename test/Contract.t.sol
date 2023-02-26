@@ -5,5 +5,4 @@ import "forge-std/Test.sol";
 
 import "src/LibDDRV.sol";
 
-contract TestDDRV is Test {
-}
+contract TestDDRV is Test {}
