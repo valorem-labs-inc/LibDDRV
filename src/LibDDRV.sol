@@ -12,21 +12,21 @@
 pragma solidity >=0.8.8;
 
 struct Range {
-    uint256 j;
+    uint256 weight;
+}
+
+struct Level {
+    uint256 weight;
+    uint256 roots;
+    mapping(uint256 => Range) ranges;
+}
+
+struct Forest {
+    uint256 weight;
+    mapping(uint256 => Level) levels;
 }
 
 library LibDDRV {
-    // Construct a level in the forest of trees
-    function construct_level(uint256 level, bytes32 ptr, bytes32 head, bytes32 tail)
-        internal
-        returns (bytes32 ptr1, bytes32 head1, bytes32 tail1)
-    {}
-
-    // Reject buckets which don't match criterion
-    function bucket_rejection() internal {}
-
-    function insert_bucket(uint256 i, Range storage range) internal {}
-
     // TODO: There may be a slightly more optimal implementation of this in Hackers delight.
     // https://github.com/hcs0/Hackers-Delight/blob/master/nlz.c.txt
     // @return the number of leading zeros in the binary representation of x
@@ -75,11 +75,39 @@ library LibDDRV {
         return (255 - nlz(x));
     }
 
+    function weight(Range storage range) internal returns (uint256 w) {}
+
+    function weight(Level storage level) internal returns (uint256 w) {}
+
+    function weight(Forest storage forest) internal returns (uint256 w) {}
+
+    // Reject buckets which don't match criterion
+    function bucket_rejection() internal {}
+
+    function insert_bucket(uint256 i, Range storage range) internal {}
+
+    function delete_range(Range storage range) internal {}
+
+    // Construct a level in the forest of trees
+    function construct_level(Forest storage forest, uint256 level, bytes32 ptr, bytes32 head, bytes32 tail)
+        internal
+        returns (bytes32 ptr1, bytes32 head1, bytes32 tail1)
+    {
+        // TODO(weights, roots for a level)
+        // Qₗ₊₁ = ∅
+        assembly {
+            // Set the queue to the free pointer
+            ptr1 := mload(0x40)
+            head1 := add(ptr, 0x20)
+            // One word is reserved here to act as a header for the queue,
+            // to check if a range is already in the queue.
+            tail1 := head
+        }
+    }
+
     // Preprocess an array of elements and their weights into a forest of trees.
     // TODO(This presently supports natural number weights, could easily support posits)
-    function preprocess(uint256[] memory weights, mapping(uint256 => mapping(uint256 => Range)) storage forest)
-        external
-    {
+    function preprocess(uint256[] memory weights, Forest storage forest) external {
         uint256 l = 1;
         // Set up an in memory queue object
         uint256 in_queue;
@@ -100,7 +128,7 @@ library LibDDRV {
         uint256 j;
         for (i = 1; i <= n; i++) {
             j = floor_ilog(weights[i]) + i;
-            Range storage range = forest[l][j];
+            Range storage range = forest.levels[l].ranges[j];
             insert_bucket(i, range);
             assembly {
                 // Check if the bit j is set in the header
@@ -113,15 +141,18 @@ library LibDDRV {
                     // Update the tail of the queue
                     tail := add(tail, 0x20)
                 }
-                // Cap off the level queue by incrementing the free memory point
+                // Cap off the level queue by incrementing the free memory pointer
                 mstore(0x40, add(tail, 0x20))
             }
-            // While Qₗ ≠ ∅
-            while (head != tail) {
-                (ptr, head, tail) = construct_level(l, ptr, head, tail);
-                l += 1;
-            }
         }
+        // While Qₗ ≠ ∅
+        while (head != tail) {
+            // Set Qₗ₊₁
+            (ptr, head, tail) = construct_level(forest, l, ptr, head, tail);
+            // Increment level
+            l += 1;
+        }
+        // The forest is now preprocessed/constructed
     }
 
     // TODO(can this take a list of elements?)
