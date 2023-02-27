@@ -17,7 +17,10 @@ struct Range {
 
 library LibDDRV {
     // Construct a level in the forest of trees
-    function construct_level() internal {}
+    function construct_level(uint256 level, bytes32 ptr, bytes32 head, bytes32 tail)
+        internal
+        returns (bytes32 ptr1, bytes32 head1, bytes32 tail1)
+    {}
 
     // Reject buckets which don't match criterion
     function bucket_rejection() internal {}
@@ -79,15 +82,18 @@ library LibDDRV {
     {
         uint256 l = 1;
         // Set up an in memory queue object
-        bytes32 ptr;
         uint256 in_queue;
+        bytes32 ptr;
+        bytes32 head;
         bytes32 tail;
+        // Qₗ = ∅
         assembly {
             // Set the queue to the free pointer
             ptr := mload(0x40)
+            head := add(ptr, 0x20)
             // One word is reserved here to act as a header for the queue,
             // to check if a range is already in the queue.
-            tail := add(ptr, 0x20)
+            tail := head
         }
         uint256 n = weights.length;
         uint256 i;
@@ -96,18 +102,24 @@ library LibDDRV {
             j = floor_ilog(weights[i]) + i;
             Range storage range = forest[l][j];
             insert_bucket(i, range);
-            // If r[l, j] not in q, then enqueue
             assembly {
                 // Check if the bit j is set in the header
-                in_queue := shr(255, shl(sub(255, j), mload(ptr)))
-                // If it's not, add the range to the queue
                 if gt(shr(255, shl(sub(255, j), mload(ptr))), 0) {
+                    // If it's not, add the range to the queue
                     // Set the bit j
+                    mstore(ptr, or(shl(j, 1), mload(ptr)))
                     // Store the range in the queue
                     mstore(tail, range.slot)
                     // Update the tail of the queue
                     tail := add(tail, 0x20)
                 }
+                // Cap off the level queue by incrementing the free memory point
+                mstore(0x40, add(tail, 0x20))
+            }
+            // While Qₗ ≠ ∅
+            while (head != tail) {
+                (ptr, head, tail) = construct_level(l, ptr, head, tail);
+                l += 1;
             }
         }
     }
