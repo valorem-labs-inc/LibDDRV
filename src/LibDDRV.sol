@@ -11,6 +11,8 @@
 
 pragma solidity >=0.8.8;
 
+// Associated storage structures
+
 // @notice An element that can be selected from many, with likelihood
 /// of selection dictated by its weight.
 struct Element {
@@ -20,7 +22,7 @@ struct Element {
 
 struct Range {
     uint256 weight;
-    Element[] elements;
+    uint256[] children;
 }
 
 struct Level {
@@ -123,7 +125,8 @@ library LibDDRV {
             uint256 weight = range.weight;
             uint256 j = floor_ilog(weight) + 1;
             // TODO(Support expanded degree bound)
-            if (range.elements.length > 2) {
+            if (range.children.length > 2) {
+                // Then this range moves to the next level
                 Range storage new_range = forest.levels[level].ranges[j];
                 assembly {
                     // Check if the bit j is set in the header
