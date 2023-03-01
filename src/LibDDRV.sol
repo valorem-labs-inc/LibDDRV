@@ -11,8 +11,16 @@
 
 pragma solidity >=0.8.8;
 
+// @notice An element that can be selected from many, with likelihood
+/// of selection dictated by its weight.
+struct Element {
+    uint32 index;
+    uint128 weight;
+}
+
 struct Range {
     uint256 weight;
+    Element[] elements;
 }
 
 struct Level {
@@ -27,6 +35,10 @@ struct Forest {
 }
 
 library LibDDRV {
+
+    uint256 private constant fp = 0x40;
+    uint256 private constant word = 0x20;
+
     // TODO: There may be a slightly more optimal implementation of this in Hackers delight.
     // https://github.com/hcs0/Hackers-Delight/blob/master/nlz.c.txt
     // @return the number of leading zeros in the binary representation of x
@@ -75,14 +87,6 @@ library LibDDRV {
         return (255 - nlz(x));
     }
 
-    function weight(Range storage range) internal returns (uint256 w) {}
-
-    function weight(Level storage level) internal returns (uint256 w) {}
-
-    function weight(Forest storage forest) internal returns (uint256 w) {}
-
-    function roots(Level storage level) internal returns (uint256 r) {}
-
     // Reject buckets which don't match criterion
     function bucket_rejection() internal {}
 
@@ -100,8 +104,8 @@ library LibDDRV {
         // Qₗ₊₁ = ∅
         assembly {
             // Set the queue to the free pointer
-            ptr1 := mload(0x40)
-            head1 := add(ptr, 0x20)
+            ptr1 := mload(fp)
+            head1 := add(ptr, word)
             // One word is reserved here to act as a header for the queue,
             // to check if a range is already in the queue.
             tail1 := head
@@ -111,7 +115,7 @@ library LibDDRV {
             Range storage range;
             assembly {
                 range.slot := mload(tail)
-                tail := sub(0x20, tail)
+                tail := sub(word, tail)
             }
         }
     }
@@ -127,8 +131,8 @@ library LibDDRV {
         // Qₗ = ∅
         assembly {
             // Set the queue to the free pointer
-            ptr := mload(0x40)
-            head := add(ptr, 0x20)
+            ptr := mload(fp)
+            head := add(ptr, word)
             // One word is reserved here to act as a header for the queue,
             // to check if a range is already in the queue.
             tail := head
@@ -149,10 +153,10 @@ library LibDDRV {
                     // Store the range in the queue
                     mstore(tail, range.slot)
                     // Update the tail of the queue
-                    tail := add(tail, 0x20)
+                    tail := add(tail, word)
                 }
                 // Cap off the level queue by incrementing the free memory pointer
-                mstore(0x40, add(tail, 0x20))
+                mstore(fp, add(tail, word))
             }
         }
         // While Qₗ ≠ ∅
