@@ -35,7 +35,6 @@ struct Forest {
 }
 
 library LibDDRV {
-
     uint256 private constant fp = 0x40;
     uint256 private constant word = 0x20;
 
