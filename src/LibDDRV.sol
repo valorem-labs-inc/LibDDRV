@@ -14,8 +14,8 @@ pragma solidity >=0.8.8;
 // @notice An element that can be selected from many, with likelihood
 /// of selection dictated by its weight.
 struct Element {
-    uint32 index;
-    uint128 weight;
+    uint256 index;
+    uint256 weight;
 }
 
 struct Range {
@@ -86,7 +86,7 @@ library LibDDRV {
         return (255 - nlz(x));
     }
 
-    // Reject buckets which don't match criterion
+    // One issue here, is that each iteration expects a new URV
     function bucket_rejection() internal {}
 
     function insert_bucket(uint256 i, Range storage range) internal {}
@@ -98,8 +98,10 @@ library LibDDRV {
         internal
         returns (bytes32 ptr1, bytes32 head1, bytes32 tail1)
     {
+        // Setup an empty level
         forest.levels[level].weight = 0;
         forest.levels[level].roots = 0;
+        // Setup an empty queue
         // Qₗ₊₁ = ∅
         assembly {
             // Set the queue to the free pointer
@@ -111,10 +113,21 @@ library LibDDRV {
         }
         // While Qₗ ≠ ∅
         while (head != tail) {
+            // Dequeue range from storage
             Range storage range;
             assembly {
                 range.slot := mload(tail)
                 tail := sub(word, tail)
+            }
+            // Get weight and range number
+            uint256 weight = range.weight;
+            uint256 j = floor_ilog(weight) + 1;
+            // TODO(Support expanded degree bound)
+            if (range.elements.length > 2) {
+                Range storage new_range;
+            } else {
+                //forest[level].weight += weight;
+                //forest[level].roots += j;
             }
         }
     }
