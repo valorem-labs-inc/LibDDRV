@@ -91,6 +91,10 @@ library LibDDRV {
     // One issue here, is that each iteration expects a new URV
     function bucket_rejection() internal {}
 
+    function insert_element(uint256 index, Range storage range) internal {}
+
+    function delete_element(uint256 index, Range storage range) internal {}
+
     function insert_bucket(uint256 i, Range storage range) internal {}
 
     function delete_range(Range storage range) internal {}
