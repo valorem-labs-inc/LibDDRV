@@ -81,6 +81,8 @@ library LibDDRV {
 
     function weight(Forest storage forest) internal returns (uint256 w) {}
 
+    function roots(Level storage level) internal returns (uint256 r) {}
+
     // Reject buckets which don't match criterion
     function bucket_rejection() internal {}
 
@@ -93,7 +95,8 @@ library LibDDRV {
         internal
         returns (bytes32 ptr1, bytes32 head1, bytes32 tail1)
     {
-        // TODO(weights, roots for a level)
+        forest.levels[level].weight = 0;
+        forest.levels[level].roots = 0;
         // Qₗ₊₁ = ∅
         assembly {
             // Set the queue to the free pointer
@@ -103,6 +106,14 @@ library LibDDRV {
             // to check if a range is already in the queue.
             tail1 := head
         }
+        // While Qₗ ≠ ∅
+        while (head != tail) {
+            Range storage range;
+            assembly {
+                range.slot := mload(tail)
+                tail := sub(0x20, tail)
+            }
+        }
     }
 
     // Preprocess an array of elements and their weights into a forest of trees.
@@ -110,7 +121,6 @@ library LibDDRV {
     function preprocess(uint256[] memory weights, Forest storage forest) external {
         uint256 l = 1;
         // Set up an in memory queue object
-        uint256 in_queue;
         bytes32 ptr;
         bytes32 head;
         bytes32 tail;
@@ -127,7 +137,7 @@ library LibDDRV {
         uint256 i;
         uint256 j;
         for (i = 1; i <= n; i++) {
-            j = floor_ilog(weights[i]) + i;
+            j = floor_ilog(weights[i]) + 1;
             Range storage range = forest.levels[l].ranges[j];
             insert_bucket(i, range);
             assembly {
