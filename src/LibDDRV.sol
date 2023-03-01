@@ -91,6 +91,10 @@ library LibDDRV {
     // One issue here, is that each iteration expects a new URV
     function bucket_rejection() internal {}
 
+    function insert_element(uint256 index, Range storage range) internal {}
+
+    function delete_element(uint256 index, Range storage range) internal {}
+
     function insert_bucket(uint256 i, Range storage range) internal {}
 
     function delete_range(Range storage range) internal {}
@@ -103,16 +107,10 @@ library LibDDRV {
         // Setup an empty level
         forest.levels[level].weight = 0;
         forest.levels[level].roots = 0;
+
         // Setup an empty queue
-        // Qₗ₊₁ = ∅
-        assembly {
-            // Set the queue to the free pointer
-            ptr1 := mload(fp)
-            head1 := add(ptr, word)
-            // One word is reserved here to act as a header for the queue,
-            // to check if a range is already in the queue.
-            tail1 := head
-        }
+        (ptr1, head1, tail1) = new_queue(head);
+
         // While Qₗ ≠ ∅
         while (head != tail) {
             // Dequeue range from storage
@@ -127,20 +125,9 @@ library LibDDRV {
             // TODO(Support expanded degree bound)
             if (range.children.length > 2) {
                 // Then this range moves to the next level
-                Range storage new_range = forest.levels[level].ranges[j];
-                assembly {
-                    // Check if the bit j is set in the header
-                    if gt(shr(255, shl(sub(255, j), mload(ptr1))), 0) {
-                        // If it's not, add the range to the queue
-                        // Set the bit j
-                        mstore(ptr1, or(shl(j, 1), mload(ptr1)))
-                        // Store the range in the queue
-                        mstore(tail1, new_range.slot)
-                        // Update the tail of the queue
-                        tail := add(tail1, word)
-                    }
-                }
-                insert_bucket(j, new_range);
+                Range storage newRange = forest.levels[level].ranges[j];
+                enqueue_range(ptr1, head1, tail1, j, newRange);
+                insert_bucket(j, newRange);
                 delete_range(range);
             } else {
                 forest.levels[level].weight += weight;
@@ -158,18 +145,8 @@ library LibDDRV {
     function preprocess(uint256[] memory weights, Forest storage forest) external {
         uint256 l = 1;
         // Set up an in memory queue object
-        bytes32 ptr;
-        bytes32 head;
-        bytes32 tail;
-        // Qₗ = ∅
-        assembly {
-            // Set the queue to the free pointer
-            ptr := mload(fp)
-            head := add(ptr, word)
-            // One word is reserved here to act as a header for the queue,
-            // to check if a range is already in the queue.
-            tail := head
-        }
+        (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue(0);
+
         uint256 n = weights.length;
         uint256 i;
         uint256 j;
@@ -177,49 +154,20 @@ library LibDDRV {
             j = floor_ilog(weights[i]) + 1;
             Range storage range = forest.levels[l].ranges[j];
             insert_bucket(i, range);
-            assembly {
-                // Check if the bit j is set in the header
-                if gt(shr(255, shl(sub(255, j), mload(ptr))), 0) {
-                    // If it's not, add the range to the queue
-                    // Set the bit j
-                    mstore(ptr, or(shl(j, 1), mload(ptr)))
-                    // Store the range in the queue
-                    mstore(tail, range.slot)
-                    // Update the tail of the queue
-                    tail := add(tail, word)
-                }
-                // Cap off the level queue by incrementing the free memory pointer
-                mstore(fp, add(tail, word))
-            }
+            enqueue_range(ptr, head, tail, j, range);
         }
-        // While Qₗ ≠ ∅
-        while (head != tail) {
-            // Set Qₗ₊₁
-            (ptr, head, tail) = construct_level(forest, l, ptr, head, tail);
-            // Increment level
-            l += 1;
-        }
+
         // The forest is now preprocessed/constructed
+        update_levels(ptr, head, tail, forest);
     }
 
     // TODO(can this take a list of elements?)
     // TODO b-factor
     // Update an element's weight in the forest of trees
     function update_element(uint256 index, uint256 newWeight, Forest storage forest) external {
+        uint l = 1;
         // Set up an in memory queue object
-        bytes32 ptr;
-        bytes32 head;
-        bytes32 tail;
-
-        // Qₗ = ∅
-        assembly {
-            // Set the queue to the free pointer
-            ptr := mload(fp)
-            head := add(ptr, word)
-            // One word is reserved here to act as a header for the queue,
-            // to check if a range is already in the queue.
-            tail := head
-        }
+        (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue(0);
 
         Element storage elt = get_element(index);
         uint256 oldWeight = elt.weight;
@@ -241,22 +189,7 @@ library LibDDRV {
             insert_element(index, newRange);
             newRange.weight += newWeight;
 
-            // enqueue the new range for an update
-            assembly {
-                // Check if the bit j is set in the header
-                if gt(shr(255, shl(sub(255, j), mload(ptr))), 0) {
-                    // If it's not, add the range to the queue
-                    // Set the bit j
-                    mstore(ptr, or(shl(j, 1), mload(ptr)))
-                    // Store the range in the queue
-                    mstore(tail, newRange.slot)
-                    // Update the tail of the queue
-                    tail := add(tail, word)
-                }
-                // Cap off the level queue by incrementing the free memory pointer
-                mstore(fp, add(tail, word))
-            }
-
+            enqueue_range(ptr, head, tail, k, newRange);
         } else {
             // set the new weight of the element
             currentRange.weight += newWeight;
@@ -264,23 +197,9 @@ library LibDDRV {
         }
 
         // enqueue the current range for an update
-        assembly {
-            // Check if the bit j is set in the header
-            if gt(shr(255, shl(sub(255, j), mload(ptr))), 0) {
-                // If it's not, add the range to the queue
-                // Set the bit j
-                mstore(ptr, or(shl(j, 1), mload(ptr)))
-                // Store the range in the queue
-                mstore(tail, currentRange.slot)
-                // Update the tail of the queue
-                tail := add(tail, word)
-            }
-            // Cap off the level queue by incrementing the free memory pointer
-            mstore(fp, add(tail, word))
-        }
+        enqueue_range(ptr, head, tail, j, currentRange);
 
-        // TODO: recurse? call for each level?
-        constuct_level(forest, 1, ptr, head, tail);
+        update_levels(ptr, head, tail, forest);
     }
 
     // Generate a discretely weighted random variate given a uniform random
@@ -289,4 +208,49 @@ library LibDDRV {
 
     // TODO
     function get_element(uint256 index) internal returns (Element storage) {revert();}
+
+    function new_queue(bytes32 head) internal returns (bytes32 ptr, bytes32 head1, bytes32 tail) {
+        // Set up an in memory queue object
+        // Qₗ = ∅ OR Qₗ₊₁ = ∅
+        assembly {
+            // Set the queue to the free pointer
+            ptr := mload(fp)
+            // One word is reserved here to act as a header for the queue,
+            // to check if a range is already in the queue.
+            head1 := add(ptr, word)
+            // if head is not supplied (Qₗ = ∅), set tail == head1; else, head
+            tail := head
+            if eq(head, 0) {
+                tail := head1
+            } 
+        }
+    }
+
+    function enqueue_range(bytes32 ptr, bytes32 head, bytes32 tail, uint256 j, Range storage range) internal {
+        assembly {
+            // Check if the bit j is set in the header
+            if gt(shr(255, shl(sub(255, j), mload(ptr))), 0) {
+                // If it's not, add the range to the queue
+                // Set the bit j
+                mstore(ptr, or(shl(j, 1), mload(ptr)))
+                // Store the range in the queue
+                mstore(tail, range.slot)
+                // Update the tail of the queue
+                tail := add(tail, word)
+            }
+            // Cap off the level queue by incrementing the free memory pointer
+            mstore(fp, add(tail, word))
+        }
+    }
+
+    // Propogate upwards any changes in the the element or range weights
+    function update_levels(bytes32 ptr, bytes32 head, bytes32 tail, Forest storage forest) internal { 
+        uint256 l = 1;
+        while (head != tail) {
+            // Set Qₗ₊₁
+            (ptr, head, tail) = construct_level(forest, l, ptr, head, tail);
+            // Increment level
+            l += 1;
+        }
+    }
 }
