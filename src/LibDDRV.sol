@@ -109,7 +109,7 @@ library LibDDRV {
         forest.levels[level].roots = 0;
 
         // Setup an empty queue
-        (ptr1, head1, tail1) = new_queue(head);
+        (ptr1, head1, tail1) = new_queue();
 
         // While Qₗ ≠ ∅
         while (head != tail) {
@@ -145,7 +145,7 @@ library LibDDRV {
     function preprocess(uint256[] memory weights, Forest storage forest) external {
         uint256 l = 1;
         // Set up an in memory queue object
-        (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue(0);
+        (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue();
 
         uint256 n = weights.length;
         uint256 i;
@@ -167,7 +167,7 @@ library LibDDRV {
     function update_element(uint256 index, uint256 newWeight, Forest storage forest) external {
         uint l = 1;
         // Set up an in memory queue object
-        (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue(0);
+        (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue();
 
         Element storage elt = get_element(index);
         uint256 oldWeight = elt.weight;
@@ -209,7 +209,7 @@ library LibDDRV {
     // TODO
     function get_element(uint256 index) internal returns (Element storage) {revert();}
 
-    function new_queue(bytes32 head) internal returns (bytes32 ptr, bytes32 head1, bytes32 tail) {
+    function new_queue() internal returns (bytes32 ptr, bytes32 head, bytes32 tail) {
         // Set up an in memory queue object
         // Qₗ = ∅ OR Qₗ₊₁ = ∅
         assembly {
@@ -217,12 +217,8 @@ library LibDDRV {
             ptr := mload(fp)
             // One word is reserved here to act as a header for the queue,
             // to check if a range is already in the queue.
-            head1 := add(ptr, word)
-            // if head is not supplied (Qₗ = ∅), set tail == head1; else, head
+            head := add(ptr, word)
             tail := head
-            if eq(head, 0) {
-                tail := head1
-            } 
         }
     }
 
