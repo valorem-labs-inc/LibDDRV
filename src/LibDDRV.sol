@@ -124,10 +124,28 @@ library LibDDRV {
             uint256 j = floor_ilog(weight) + 1;
             // TODO(Support expanded degree bound)
             if (range.elements.length > 2) {
-                Range storage new_range;
+                Range storage new_range = forest.levels[level].ranges[j];
+                assembly {
+                    // Check if the bit j is set in the header
+                    if gt(shr(255, shl(sub(255, j), mload(ptr1))), 0) {
+                        // If it's not, add the range to the queue
+                        // Set the bit j
+                        mstore(ptr1, or(shl(j, 1), mload(ptr1)))
+                        // Store the range in the queue
+                        mstore(tail1, new_range.slot)
+                        // Update the tail of the queue
+                        tail := add(tail1, word)
+                    }
+                }
+                insert_bucket(j, new_range);
+                delete_range(range);
             } else {
-                //forest[level].weight += weight;
-                //forest[level].roots += j;
+                forest.levels[level].weight += weight;
+                forest.levels[level].roots += j;
+            }
+            assembly {
+                // Cap off the level queue by incrementing the free memory pointer
+                mstore(fp, add(tail1, word))
             }
         }
     }
