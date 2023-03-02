@@ -277,5 +277,38 @@ library LibDDRV {
         }
     }
 
-    function generate(mapping(uint256 => mapping(uint256 => Node)) storage forest, uint256 seed) external {}
+    function generate(Forest storage forest, uint256 seed) external returns (uint256) {
+        // level search with the URV by finding the minimum integer l such that
+        // U * W < ∑ₖ weight(Tₖ), where 1 ≤ k ≤ l, U == URV ∈ [0, 1), W is the total weight
+        // seed ∈ [0, 255), so the arithmetic included is to put it into a fractional value
+        uint256 l = 1;
+        uint256 w = 0;
+        uint256 threshold = (forest.weight * seed) / type(uint256).max;
+        uint256 j;
+        uint256 lj;
+
+        Level storage chosenLevel;
+
+        // TODO: level has no root ranges
+        while (w <= threshold) {
+            w += forest.levels[l].weight;
+            l++;
+        }
+        w = 0;
+        chosenLevel = forest.levels[l];
+
+        mapping(uint256 => Node) storage ranges = chosenLevel.ranges;
+
+        threshold = chosenLevel.weight;
+        lj = chosenLevel.roots;
+
+        // select root range within level 
+        while (w < threshold) {
+            j = floor_ilog(lj) + 1;
+            lj -= 2 ** j;
+            w += ranges[j].weight;
+        }
+
+        return bucket_rejection(forest, l, j, seed);
+    }
 }
