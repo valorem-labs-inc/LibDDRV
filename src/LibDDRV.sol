@@ -106,7 +106,7 @@ library LibDDRV {
         uint256 ilog_n = floor_ilog(n);
         uint256 scale_down_bits = 255 - ilog_n;
         while (repeat) {
-            uint256 expanded_urv = uint256(keccak256(abi.encode(urv, i))) >> scale_down_bits;
+            uint256 expanded_urv = uint256(keccak256(abi.encode(urv, i++))) >> scale_down_bits;
             uint256 un = expanded_urv * n;
             // = ⌊un⌋
             index = ((expanded_urv * n) >> ilog_n) << ilog_n;
