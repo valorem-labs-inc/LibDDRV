@@ -91,6 +91,7 @@ library LibDDRV {
     // One issue here, is that each iteration expects a new URV
     function bucket_rejection(Forest storage forest, uint256 level, uint256 range, uint256 urv)
         internal
+        view
         returns (uint256)
     {
         // We want to choose a child to descend to from the range.
@@ -277,7 +278,7 @@ library LibDDRV {
         }
     }
 
-    function generate(Forest storage forest, uint256 seed) external returns (uint256) {
+    function generate(Forest storage forest, uint256 seed) external view returns (uint256) {
         // level search with the URV by finding the minimum integer l such that
         // U * W < ∑ₖ weight(Tₖ), where 1 ≤ k ≤ l, U == URV ∈ [0, 1), W is the total weight
         // seed ∈ [0, 255), so the arithmetic included is to put it into a fractional value
