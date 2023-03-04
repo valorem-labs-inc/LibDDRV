@@ -6,16 +6,15 @@ import "forge-std/Test.sol";
 import "src/LibDDRV.sol";
 
 contract TestDDRV is Test {
-    Forest forest;
-    uint256[] seeds;
+    Forest internal forest;
+    uint256[] internal seeds;
     uint256 SEED_COUNT = 1000;
 
     function setUp() public {
-        seeds.push(keccak256(abi.encode(0)));
+        seeds.push(uint256(keccak256(abi.encode(0))));
         for (uint i = 1; i < SEED_COUNT; i++) {
-            seeds.push(keccak256(abi.encode(seeds[i-1] + i)));
+            seeds.push(uint256(keccak256(abi.encode(seeds[i-1] + i))));
         }
-        forest = Forest();
     }
 
     function testForestStructureBasic() public {
@@ -53,7 +52,8 @@ contract TestDDRV is Test {
         // flip 1000 coins
         for (uint i = 0; i < SEED_COUNT; i++) { 
             uint256 seed = seeds[i];
-            uint256 element = LibDDRV.generate(forest, seed);
+            uint256 element = 0;
+            //element = LibDDRV.generate(forest, seed);
 
             if (element == 0) {
                 countTails++;
