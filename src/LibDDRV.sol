@@ -6,7 +6,9 @@
  *
  * Copyright © 2023 Valorem Labs Inc.
  *
- * Author: 0xAlcibiades <alcibiades@valorem.xyz>
+ * @author 0xAlcibiades
+ * @author neodaoist
+ * @author Flip-Liquid
  */
 
 pragma solidity >=0.8.8;
