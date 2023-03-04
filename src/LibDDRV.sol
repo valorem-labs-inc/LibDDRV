@@ -179,7 +179,7 @@ library LibDDRV {
         uint256 n = weights.length;
         uint256 i;
         uint256 j;
-        for (i = 1; i <= n; i++) {
+        for (i = 0; i < n; i++) {
             j = floor_ilog(weights[i]) + 1;
             Node storage range = forest.levels[l].ranges[j];
             insert_bucket(i, range);
@@ -306,7 +306,7 @@ library LibDDRV {
         threshold = chosenLevel.weight;
         lj = chosenLevel.roots;
 
-        // select root range within level 
+        // select root range within level
         while (w < threshold) {
             j = floor_ilog(lj) + 1;
             lj -= 2 ** j;
