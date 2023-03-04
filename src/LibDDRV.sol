@@ -199,7 +199,7 @@ library LibDDRV {
         // Set up an in memory queue object
         (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue();
 
-        Node storage elt = get_element(index);
+        Node storage elt = get_element(forest, index);
         uint256 oldWeight = elt.weight;
 
         // update leaf/element weight
@@ -232,9 +232,8 @@ library LibDDRV {
         update_levels(ptr, head, tail, forest);
     }
 
-    // TODO
-    function get_element(uint256 index) internal returns (Node storage) {
-        revert();
+    function get_element(Forest storage forest, uint256 index) internal view returns (Node storage) {
+        return forest.levels[0].ranges[index];
     }
 
     function new_queue() internal returns (bytes32 ptr, bytes32 head, bytes32 tail) {
