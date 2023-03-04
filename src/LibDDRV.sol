@@ -284,7 +284,7 @@ library LibDDRV {
         uint256 l = 1;
         uint256 w = 0;
 
-        // scale the seed down to 128b, to ensure muldiv doesn't underflow when dividing 
+        // scale the seed down to 128b, to ensure muldiv doesn't underflow when dividing
         // by intmax
         seed >>= 128;
         uint256 threshold = (forest.weight * seed) / type(uint128).max;
