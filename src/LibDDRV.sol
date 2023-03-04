@@ -13,28 +13,35 @@ pragma solidity >=0.8.8;
 
 // Associated storage structures
 
+// Represents an edge in the forest of trees
 struct Edge {
     uint256 level;
     uint256 index;
 }
 
+// Represents a node in the forest of trees
 struct Node {
     uint256 index;
     uint256 weight;
     Edge[] children;
 }
 
+// A level of the canopy in the forest of trees
 struct Level {
     uint256 weight;
     uint256 roots;
     mapping(uint256 => Node) ranges;
 }
 
+// A struct representing the whole forest
 struct Forest {
     uint256 weight;
     mapping(uint256 => Level) levels;
 }
 
+// A library which takes in weights and uniform random variates and uses them
+// to generate dynamically weighted discrete probability mass function random
+// variates.
 library LibDDRV {
     uint256 private constant fp = 0x40;
     uint256 private constant word = 0x20;
