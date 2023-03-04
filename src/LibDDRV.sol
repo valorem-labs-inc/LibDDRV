@@ -302,7 +302,7 @@ library LibDDRV {
         threshold = chosenLevel.weight;
         lj = chosenLevel.roots;
 
-        // select root range within level 
+        // select root range within level
         while (w < threshold) {
             j = floor_ilog(lj) + 1;
             lj -= 2 ** j;
