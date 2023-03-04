@@ -179,7 +179,7 @@ library LibDDRV {
         uint256 n = weights.length;
         uint256 i;
         uint256 j;
-        for (i = 1; i <= n; i++) {
+        for (i = 0; i < n; i++) {
             j = floor_ilog(weights[i]) + 1;
             Node storage range = forest.levels[l].ranges[j];
             insert_bucket(i, range);
