@@ -283,7 +283,11 @@ library LibDDRV {
         // seed ∈ [0, 255), so the arithmetic included is to put it into a fractional value
         uint256 l = 1;
         uint256 w = 0;
-        uint256 threshold = (forest.weight * seed) / type(uint256).max;
+
+        // scale the seed down to 128b, to ensure muldiv doesn't underflow when dividing 
+        // by intmax
+        seed >>= 128;
+        uint256 threshold = (forest.weight * seed) / type(uint128).max;
         uint256 j;
         uint256 lj;
 
