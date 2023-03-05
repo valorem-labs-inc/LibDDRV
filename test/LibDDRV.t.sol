@@ -66,15 +66,15 @@ contract TestDDRV is Test {
             uint256 seed = seeds[i];
             uint256 element = 0;
             // TODO(What is causing forge to hang on generate?)
-            //element = LibDDRV.generate(forest, seed);
+            element = LibDDRV.generate(forest, seed);
 
-            //if (element == 0) {
-            //    countTails++;
-            //} else if (element == 1) {
-            //    countHeads++;
-            //} else {
-            //    revert("unexpected element index returned from generate");
-            //}
+            if (element == 0) {
+                countTails++;
+            } else if (element == 1) {
+                countHeads++;
+            } else {
+                revert("unexpected element index returned from generate");
+            }
         }
 
         // assert these after

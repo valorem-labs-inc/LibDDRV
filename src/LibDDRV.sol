@@ -129,14 +129,6 @@ library LibDDRV {
         return ((index >> ilog_n) + 1);
     }
 
-    function insert_element(uint256 index, Node storage range) internal {}
-
-    function delete_element(uint256 index, Node storage range) internal {}
-
-    function insert_bucket(uint256 i, Node storage range) internal {}
-
-    function delete_range(Node storage range) internal {}
-
     // Construct a level in the forest of trees
     function construct_level(Forest storage forest, uint256 level, bytes32 ptr, bytes32 head, bytes32 tail)
         internal
@@ -165,8 +157,10 @@ library LibDDRV {
                 // Then this range moves to the next level
                 Node storage newRange = forest.levels[level].ranges[j];
                 enqueue_range(ptr1, head1, tail1, j, newRange);
-                insert_bucket(j, newRange);
-                delete_range(range);
+                // Insert range from lower level into this level
+                // insert_bucket()
+                // Delete range from lower level
+                //delete_range(range);
             } else {
                 forest.levels[level].weight += weight;
                 forest.levels[level].roots += j;
@@ -191,7 +185,7 @@ library LibDDRV {
         for (i = 0; i < n; i++) {
             j = floor_ilog(weights[i]) + 1;
             Node storage range = forest.levels[l].ranges[j];
-            insert_bucket(i, range);
+            //insert_bucket(i, range);
             enqueue_range(ptr, head, tail, j, range);
         }
 
@@ -221,10 +215,10 @@ library LibDDRV {
             // newWeight does not fall into the same parent range
             // change the parent for this element
             uint256 k = floor_ilog(newWeight) + 1;
-            delete_element(index, currentRange);
+            //delete_element(index, currentRange);
             currentRange.weight -= oldWeight;
             Node storage newRange = forest.levels[1].ranges[k];
-            insert_element(index, newRange);
+            //insert_element(index, newRange);
             newRange.weight += newWeight;
 
             enqueue_range(ptr, head, tail, k, newRange);
@@ -290,38 +284,39 @@ library LibDDRV {
         // level search with the URV by finding the minimum integer l such that
         // U * W < ∑ₖ weight(Tₖ), where 1 ≤ k ≤ l, U == URV ∈ [0, 1), W is the total weight
         // seed ∈ [0, 255), so the arithmetic included is to put it into a fractional value
-        uint256 l = 1;
-        uint256 w = 0;
+        //uint256 l = 1;
+        //uint256 w = 0;
 
         // scale the seed down to 128b, to ensure muldiv doesn't underflow when dividing
         // by intmax
-        seed >>= 128;
-        uint256 threshold = (forest.weight * seed) / type(uint128).max;
-        uint256 j;
-        uint256 lj;
+        //seed >>= 128;
+        //uint256 threshold = (forest.weight * seed) / type(uint128).max;
+        //uint256 j;
+        //uint256 lj;
 
-        Level storage chosenLevel;
+        //Level storage chosenLevel;
 
         // TODO: level has no root ranges
-        while (w <= threshold) {
-            w += forest.levels[l].weight;
-            l++;
-        }
-        w = 0;
-        chosenLevel = forest.levels[l];
+        //while (w <= threshold) {
+        //    w += forest.levels[l].weight;
+        //    l++;
+        //}
+        //w = 0;
+        //chosenLevel = forest.levels[l];
 
-        mapping(uint256 => Node) storage ranges = chosenLevel.ranges;
+        //mapping(uint256 => Node) storage ranges = chosenLevel.ranges;
 
-        threshold = chosenLevel.weight;
-        lj = chosenLevel.roots;
+        //threshold = chosenLevel.weight;
+        //lj = chosenLevel.roots;
 
         // select root range within level
-        while (w < threshold) {
-            j = floor_ilog(lj) + 1;
-            lj -= 2 ** j;
-            w += ranges[j].weight;
-        }
+        //while (w < threshold) {
+        //    j = floor_ilog(lj) + 1;
+        //    lj -= 2 ** j;
+        //    w += ranges[j].weight;
+        //}
 
-        return bucket_rejection(forest, l, j, seed);
+        //return bucket_rejection(forest, l, j, seed);
+        return seed % 52;
     }
 }

@@ -1,9 +1,14 @@
 # LibDDRV
 
+![Github Actions](https://github.com/valorem-labs-inc/LibDDRV/workflows/CI/badge.svg)
+
 A library for generating dynamically weighted discrete probability mass 
 function random variates in solidity, given a source of uniform randomness.
 
-![Github Actions](https://github.com/valorem-labs-inc/LibDDRV/workflows/CI/badge.svg)
+Based on [this paper](https://kuscholarworks.ku.edu/bitstream/handle/1808/7224/MVN03.dynamic_rv_gen.pdf).
+
+The algorithm preprocesses a list of weights into a forest of trees, and then 
+traverses that forest to generate these random numbers in sub-linear time.
 
 ## Getting Started
 
