@@ -13,6 +13,8 @@
 
 pragma solidity >=0.8.8;
 
+import "forge-std/console.sol";
+
 // Associated storage structures
 
 // Represents an edge in the forest of trees
@@ -188,6 +190,7 @@ library LibDDRV {
             // Add this index as a child of the j range on table level one.
             Edge memory edge = Edge({level: 0, index: i});
             forest.levels[1].ranges[j].children.push(edge);
+            // Update the forest weight overall
             forest.weight += weights[i];
             // Enqueue the range if it's not already in the queue for the next
             // level.
@@ -250,14 +253,23 @@ library LibDDRV {
         assembly {
             // Set the queue to the free pointer
             ptr := mload(fp)
+            // Note that Solidity generated IR code reserves memory offset ``0x60`` as well, but a pure Yul object is free to use memory as it chooses.
+            if iszero(ptr) { ptr := 0x60 }
+            mstore(fp, add(ptr, fp))
             // One word is reserved here to act as a header for the queue,
             // to check if a range is already in the queue.
-            head := add(ptr, word)
+            head := add(fp, word)
             tail := head
         }
     }
 
     function enqueue_range(bytes32 ptr, bytes32 head, bytes32 tail, uint256 j, Node storage range) internal {
+        console.log("Enqueing");
+        uint256 flags;
+        assembly {
+            flags := mload(ptr)
+        }
+        console.log(flags);
         assembly {
             // Check if the bit j is set in the header
             if gt(shr(255, shl(sub(255, j), mload(ptr))), 0) {
