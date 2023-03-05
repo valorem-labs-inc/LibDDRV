@@ -134,10 +134,6 @@ library LibDDRV {
         internal
         returns (bytes32 ptr1, bytes32 head1, bytes32 tail1)
     {
-        // Setup an empty level
-        forest.levels[level].weight = 0;
-        forest.levels[level].roots = 0;
-
         // Setup an empty queue
         (ptr1, head1, tail1) = new_queue();
 
@@ -152,19 +148,21 @@ library LibDDRV {
             // Get weight and range number
             uint256 weight = range.weight;
             uint256 j = floor_ilog(weight) + 1;
+            forest.levels[level].weight += weight;
+            forest.levels[level].roots += j;
             // TODO(Support expanded degree bound)
-            if (range.children.length > 2) {
-                // Then this range moves to the next level
-                Node storage newRange = forest.levels[level].ranges[j];
-                enqueue_range(ptr1, head1, tail1, j, newRange);
-                // Insert range from lower level into this level
-                // insert_bucket()
-                // Delete range from lower level
-                //delete_range(range);
-            } else {
-                forest.levels[level].weight += weight;
-                forest.levels[level].roots += j;
-            }
+            //if (range.children.length > 2) {
+            // Then this range moves to the next level
+            //Node storage newRange = forest.levels[level].ranges[j];
+            //enqueue_range(ptr1, head1, tail1, j, newRange);
+            // Insert range from lower level into this level
+            // insert_bucket()
+            // Delete range from lower level
+            //delete_range(range);
+            //} else {
+            //    forest.levels[level].weight += weight;
+            //    forest.levels[level].roots += j;
+            //}
             assembly {
                 // Cap off the level queue by incrementing the free memory pointer
                 mstore(fp, add(tail1, word))
@@ -175,7 +173,6 @@ library LibDDRV {
     // Preprocess an array of elements and their weights into a forest of trees.
     // TODO(This presently supports natural number weights, could easily support posits)
     function preprocess(uint256[] memory weights, Forest storage forest) external {
-        uint256 l = 1;
         // Set up an in memory queue object
         (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue();
 
@@ -184,12 +181,20 @@ library LibDDRV {
         uint256 j;
         for (i = 0; i < n; i++) {
             j = floor_ilog(weights[i]) + 1;
-            Node storage range = forest.levels[l].ranges[j];
-            //insert_bucket(i, range);
+            Node storage range = forest.levels[1].ranges[j];
+            // Add this index to table level zero.
+            forest.levels[0].ranges[i].weight = weights[i];
+            forest.levels[0].ranges[i].index = i;
+            // Add this index as a child of the j range on table level one.
+            Edge memory edge = Edge({level: 0, index: i});
+            forest.levels[1].ranges[j].children.push(edge);
+            forest.weight += weights[i];
+            // Enqueue the range if it's not already in the queue for the next
+            // level.
             enqueue_range(ptr, head, tail, j, range);
         }
 
-        // The forest is now preprocessed/constructed
+        // Construct the forest of trees from the bottom up
         update_levels(ptr, head, tail, forest);
     }
 
