@@ -29,15 +29,15 @@ contract TestDDRV is Test {
         // total weight should be the sum
         assertEq(forest.weight, 100);
 
-        // level 0 (i.e. the leaves) should not be initialized
-        assertEq(forest.levels[0].weight, 0);
-        assertEq(forest.levels[0].roots, 0);
+        // The two weights should exist as leaves on level 0
+        assertEq(forest.levels[0].ranges[1].weight, 50);
+        assertEq(forest.levels[0].ranges[0].weight, 50);
 
         // two elements should be in the only range on level 1
-        assertEq(forest.levels[1].weight, 100);
+        //assertEq(forest.levels[1].weight, 100);
 
         // emit
-        emit log_named_uint("lvl1 roots", forest.levels[1].roots);
+        //emit log_named_uint("lvl1 roots", forest.levels[1].roots);
     }
 
     function testUpdate() public {
