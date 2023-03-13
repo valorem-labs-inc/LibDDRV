@@ -202,6 +202,8 @@ library LibDDRV {
         update_levels(ptr, head, tail, forest);
     }
 
+    function insert_element(uint256 index, uint256 weight, Forest storage forest) external {}
+
     // TODO(can this take a list of elements?)
     // TODO b-factor
     // Update an element's weight in the forest of trees
