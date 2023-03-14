@@ -3,9 +3,10 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import "src/LibDDRV.sol";
+import "../src/LibDDRV.sol";
 
-contract TestDDRV is Test {
+/// @notice Unit tests for LibDDRV
+contract LibDDRVUnitTest is Test {
     Forest internal forest;
     uint256[] internal seeds;
     uint256 SEED_COUNT = 1000;
@@ -38,6 +39,10 @@ contract TestDDRV is Test {
 
         // emit
         //emit log_named_uint("lvl1 roots", forest.levels[1].roots);
+    }
+
+    function testInsert() public {
+        assertTrue(false);
     }
 
     function testUpdate() public {
