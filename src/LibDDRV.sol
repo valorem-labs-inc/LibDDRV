@@ -301,39 +301,38 @@ library LibDDRV {
         // level search with the URV by finding the minimum integer l such that
         // U * W < ∑ₖ weight(Tₖ), where 1 ≤ k ≤ l, U == URV ∈ [0, 1), W is the total weight
         // seed ∈ [0, 255), so the arithmetic included is to put it into a fractional value
-        //uint256 l = 1;
-        //uint256 w = 0;
+        uint256 l = 1;
+        uint256 w = 0;
 
         // scale the seed down to 128b, to ensure muldiv doesn't underflow when dividing
         // by intmax
-        //seed >>= 128;
-        //uint256 threshold = (forest.weight * seed) / type(uint128).max;
-        //uint256 j;
-        //uint256 lj;
+        seed >>= 128;
+        uint256 threshold = (forest.weight * seed) / type(uint128).max;
+        uint256 j;
+        uint256 lj;
 
         //Level storage chosenLevel;
 
         // TODO: level has no root ranges
-        //while (w <= threshold) {
-        //    w += forest.levels[l].weight;
-        //    l++;
-        //}
-        //w = 0;
-        //chosenLevel = forest.levels[l];
+        while (w <= threshold) {
+           w += forest.levels[l].weight;
+           l++;
+        }
+        w = 0;
+        chosenLevel = forest.levels[l];
 
-        //mapping(uint256 => Node) storage ranges = chosenLevel.ranges;
+        mapping(uint256 => Node) storage ranges = chosenLevel.ranges;
 
-        //threshold = chosenLevel.weight;
-        //lj = chosenLevel.roots;
+        threshold = chosenLevel.weight;
+        lj = chosenLevel.roots;
 
         // select root range within level
-        //while (w < threshold) {
-        //    j = floor_ilog(lj) + 1;
-        //    lj -= 2 ** j;
-        //    w += ranges[j].weight;
-        //}
+        while (w < threshold) {
+           j = floor_ilog(lj) + 1;
+           lj -= 2 ** j;
+           w += ranges[j].weight;
+        }
 
-        //return bucket_rejection(forest, l, j, seed);
-        return seed % 52;
+        return bucket_rejection(forest, l, j, seed);
     }
 }
