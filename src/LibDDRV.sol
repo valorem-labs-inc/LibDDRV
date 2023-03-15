@@ -175,7 +175,7 @@ library LibDDRV {
 
     // Preprocess an array of elements and their weights into a forest of trees.
     // TODO(This presently supports natural number weights, could easily support posits)
-    function preprocess(uint256[] memory weights, Forest storage forest) external {
+    function preprocess(uint256[] calldata weights, Forest storage forest) external {
         // Set up an in memory queue object
         (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue();
 
