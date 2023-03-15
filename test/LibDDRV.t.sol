@@ -40,7 +40,7 @@ contract TestDDRV is Test {
         //emit log_named_uint("lvl1 roots", forest.levels[1].roots);
     }
 
-    function testUpdate() public {
+    function testUpdate_simple() public {
         uint256 countHeads = 0;
         uint256 countTails = 0;
         uint256[] memory weights = new uint256[](2);
@@ -50,6 +50,16 @@ contract TestDDRV is Test {
         LibDDRV.preprocess(weights, forest);
         LibDDRV.update_element(0, 30, forest);
         assertEq(forest.levels[0].ranges[0].weight, 30);
+    }
+
+    function testGenerate_simple() public {
+        uint256[] memory weights = new uint256[](2);
+        weights[0] = 50;
+        weights[1] = 50;
+
+        LibDDRV.preprocess(weights, forest);
+        uint256 element = LibDDRV.generate(forest, 0);
+        assertTrue(element == 0 || element == 1);
     }
 
     function testGenerate() public {

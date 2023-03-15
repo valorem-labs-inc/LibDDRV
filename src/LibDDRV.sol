@@ -311,7 +311,7 @@ library LibDDRV {
         uint256 j;
         uint256 lj;
 
-        //Level storage chosenLevel;
+        Level storage chosenLevel;
 
         // TODO: level has no root ranges
         while (w <= threshold) {
