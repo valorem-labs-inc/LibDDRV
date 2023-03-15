@@ -1,2 +1,5 @@
 [profile.ci.fuzz]
 runs = 10_000
+
+[profile.default]
+remappings = ['forge-std/=lib/forge-std/src/']
