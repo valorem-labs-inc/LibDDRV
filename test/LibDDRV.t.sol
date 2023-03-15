@@ -17,7 +17,7 @@ contract TestDDRV is Test {
         }
     }
 
-    function testPreprocess() public {
+    function testPreprocess_simple() public {
         uint256[] memory weights = new uint256[](2);
         weights[0] = 50;
         weights[1] = 50;
@@ -35,10 +35,7 @@ contract TestDDRV is Test {
         assertEq(forest.levels[0].ranges[1].weight, 50);
 
         // two elements should be in the only range on level 1
-        //assertEq(forest.levels[1].weight, 100);
-
-        // emit
-        //emit log_named_uint("lvl1 roots", forest.levels[1].roots);
+        assertEq(forest.levels[1].weight, 100);
     }
 
     function testUpdate_simple() public {
