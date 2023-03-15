@@ -180,21 +180,29 @@ library LibDDRV {
         (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue();
 
         uint256 n = weights.length;
+        uint256 weight;
         uint256 i;
         uint256 j;
         for (i = 0; i < n; i++) {
-            j = floor_ilog(weights[i]) + 1;
+            weight = weights[i];
+            j = floor_ilog(weight) + 1;
+            /*console.log("i: %i", i);
+            console.log("weights[i]: %s", weight);
+            console.log("ilog weights[i]: %s", j);*/
             Node storage range = forest.levels[1].ranges[j];
             // Add this index to table level zero.
-            forest.levels[0].ranges[i].weight = weights[i];
+            forest.levels[0].ranges[i].weight = weight;
             forest.levels[0].ranges[i].index = i;
             // Add this index as a child of the j range on table level one.
             Edge memory edge = Edge({level: 0, index: i});
             forest.levels[1].ranges[j].children.push(edge);
             // Update the forest weight overall
-            forest.weight += weights[i];
+            forest.weight += weight;
             // Enqueue the range if it's not already in the queue for the next
             // level.
+            /*console.log("ptr: %i", ptr);
+            console.log("head: %i", head);
+            console.log("tail: %i", tail);*/
             enqueue_range(ptr, head, tail, j, range);
         }
 
@@ -284,6 +292,7 @@ library LibDDRV {
             // Cap off the level queue by incrementing the free memory pointer
             mstore(fp, add(tail, word))
         }
+        console.log("enqueued");
     }
 
     // Propogate upwards any changes in the the element or range weights
