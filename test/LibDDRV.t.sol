@@ -18,11 +18,12 @@ contract TestDDRV is Test {
     }
 
     function testPreprocess() public {
-        uint256 countHeads = 0;
-        uint256 countTails = 0;
         uint256[] memory weights = new uint256[](2);
         weights[0] = 50;
         weights[1] = 50;
+
+        console.log("weight 0: %s", weights[0]);
+        console.log("weight 1: %s", weights[1]);
 
         LibDDRV.preprocess(weights, forest);
 
@@ -30,8 +31,8 @@ contract TestDDRV is Test {
         assertEq(forest.weight, 100);
 
         // The two weights should exist as leaves on level 0
-        assertEq(forest.levels[0].ranges[1].weight, 50);
         assertEq(forest.levels[0].ranges[0].weight, 50);
+        assertEq(forest.levels[0].ranges[1].weight, 50);
 
         // two elements should be in the only range on level 1
         //assertEq(forest.levels[1].weight, 100);
@@ -41,8 +42,6 @@ contract TestDDRV is Test {
     }
 
     function testUpdate_simple() public {
-        uint256 countHeads = 0;
-        uint256 countTails = 0;
         uint256[] memory weights = new uint256[](2);
         weights[0] = 50;
         weights[1] = 50;
