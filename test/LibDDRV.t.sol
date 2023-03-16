@@ -17,13 +17,33 @@ contract TestDDRV is Test {
         }
     }
 
+    /*======================== UTILS ========================*/
+    function logForest(Forest storage f) internal view {
+        console.log("forest weight: %s", f.weight);
+        for (uint256 level = 0; level < 10; level++) {
+            if (f.levels[level].weight == 0) {
+                continue;
+            }
+            console.log("\t level %s weight: %s", level, f.levels[level].weight);
+            console.log("\t level %s roots: %s", level, f.levels[level].roots);
+            for (uint256 index = 0; index < 10; index++) {
+                if (f.levels[level].ranges[index].weight == 0) {
+                    continue;
+                }
+                console.log("\t\t level %s index %s weight: %s", level, index, f.levels[level].ranges[index].weight);
+                console.log(
+                    "\t\t level %s index %s children: %s", level, index, f.levels[level].ranges[index].children.length
+                );
+            }
+        }
+    }
+
+    /*======================== TESTS ========================*/
+
     function testPreprocess_simple() public {
         uint256[] memory weights = new uint256[](2);
         weights[0] = 50;
         weights[1] = 50;
-
-        console.log("weight 0: %s", weights[0]);
-        console.log("weight 1: %s", weights[1]);
 
         LibDDRV.preprocess(weights, forest);
 
@@ -34,8 +54,10 @@ contract TestDDRV is Test {
         assertEq(forest.levels[0].ranges[0].weight, 50);
         assertEq(forest.levels[0].ranges[1].weight, 50);
 
+        logForest(forest);
+
         // two elements should be in the only range on level 1
-        assertEq(forest.levels[1].weight, 100);
+        assertEq(forest.levels[0].weight, 100);
     }
 
     function testUpdate_simple() public {
