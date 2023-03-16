@@ -188,6 +188,8 @@ library LibDDRV {
         Edge memory edge = Edge({level: srcLevel, index: range.index});
         destRange.children.push(edge);
         destRange.weight += range.weight;
+        // TODO: Range.index is duplicated here
+        destRange.index = destIndex;
         return destRange;
     }
 
