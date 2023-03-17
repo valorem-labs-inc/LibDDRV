@@ -53,7 +53,7 @@ library LibDDRV {
     // TODO: There may be a slightly more optimal implementation of this in Hackers delight.
     // https://github.com/hcs0/Hackers-Delight/blob/master/nlz.c.txt
     // @return the number of leading zeros in the binary representation of x
-    function nlz(uint256 x) internal pure returns (uint256) {
+    function nlz(uint256 x) public pure returns (uint256) {
         if (x == 0) {
             return 256;
         }
@@ -95,7 +95,7 @@ library LibDDRV {
     }
 
     // @retrun integer ⌊lg n⌋ of x.
-    function floor_ilog(uint256 x) internal pure returns (uint256) {
+    function floor_ilog(uint256 x) public pure returns (uint256) {
         return (255 - nlz(x));
     }
 
