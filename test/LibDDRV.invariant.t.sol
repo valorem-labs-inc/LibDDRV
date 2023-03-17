@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "forge-std/Test.sol";
+import {InvariantTest} from "forge-std/src/InvariantTest.sol";
 
 import {Math} from "./utils/Math.sol";
 import {LibDDRVUtils} from "./utils/LibDDRVUtils.sol";
@@ -13,13 +13,15 @@ import "../src/LibDDRV.sol";
 
 /// @notice Invariant tests for LibDDRV
 /// For more info, see https://kuscholarworks.ku.edu/bitstream/handle/1808/7224/MVN03.dynamic_rv_gen.pdf
-contract LibDDRVInvariantTest is Test {
+contract LibDDRVInvariantTest is InvariantTest {
     ContractUsingLib internal c;
     Handler internal handler;
 
     function setUp() public {
         c = new ContractUsingLib();
         handler = new Handler(address(c));
+
+        excludeContract(address(c));
     }
 
     /**

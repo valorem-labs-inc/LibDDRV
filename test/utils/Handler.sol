@@ -59,6 +59,7 @@ contract Handler is StdUtils {
         useRandomAccount(accountIndex)
     {
         numCalls["update_element"]++;
+        // TODO add element insertions to ensure element exists
         contractUsingLib.update_element(index, weight);
     }
 
