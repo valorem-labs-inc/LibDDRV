@@ -1,0 +1,6 @@
+{
+    "solc_args": "optimize",
+    "solc_remaps": [
+        "forge-std/=lib/forge-std/src/"
+    ]
+}
