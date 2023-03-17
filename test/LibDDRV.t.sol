@@ -60,6 +60,69 @@ contract TestDDRV is Test {
         assertEq(forest.levels[0].weight, 100);
     }
 
+    function testPreprocess_overflow() public {
+        uint256[] memory weights = new uint256[](4);
+        uint256 expectedWeight = 22; //E i [4,7]
+        weights[0] = 4;
+        weights[1] = 5;
+        weights[0] = 6;
+        weights[1] = 7;
+
+        LibDDRV.preprocess(weights, forest);
+
+        // total weight should be the sum
+        assertEq(forest.weight, expectedWeight);
+        assertEq(forest.levels[0].weight, expectedWeight);
+
+        assertEq(forest.levels[1].weight, expectedWeight);
+
+        uint256 l1RangeIndex = LibDDRV.floor_ilog(7);
+        uint256 l2RangeIndex = LibDDRV.floor_ilog(expectedWeight);
+
+        console.log("l1 index %s", l1RangeIndex);
+        console.log("l2 index %s", l2RangeIndex);
+
+        // range weighs 22, and is not a root range
+        assertEq(forest.levels[1].ranges[l1RangeIndex].weight, expectedWeight); 
+        assertEq(forest.levels[1].roots, 0);
+
+        // range weighs 22, and is the only root range
+        assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight); 
+        assertEq(forest.levels[2].roots, l2RangeIndex);
+    }
+
+    // Test that the forest is built correctly when there are more 4 elements
+    function testPreprocess_threeLevels() public {
+        uint256[] memory weights = new uint256[](4);
+        uint256 expectedWeight = 22; //E i [4,7]
+        weights[0] = 4;
+        weights[1] = 5;
+        weights[2] = 6;
+        weights[3] = 7;
+
+        LibDDRV.preprocess(weights, forest);
+
+        // total weight should be the sum
+        assertEq(forest.weight, expectedWeight);
+        assertEq(forest.levels[0].weight, expectedWeight);
+
+        assertEq(forest.levels[1].weight, expectedWeight);
+
+        uint256 l1RangeIndex = LibDDRV.floor_ilog(7);
+        uint256 l2RangeIndex = LibDDRV.floor_ilog(expectedWeight);
+
+        console.log("l1 index %s", l1RangeIndex);
+        console.log("l2 index %s", l2RangeIndex);
+
+        // range weighs 22, and is not a root range
+        assertEq(forest.levels[1].ranges[l1RangeIndex].weight, expectedWeight); 
+        assertEq(forest.levels[1].roots, 0);
+
+        // range weighs 22, and is the only root range
+        assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight); 
+        assertEq(forest.levels[2].roots, l2RangeIndex);
+    }
+
     function testUpdate_simple() public {
         uint256[] memory weights = new uint256[](2);
         weights[0] = 50;
