@@ -35,7 +35,7 @@ contract LibDDRVInvariantTest is Test {
     /**
      * @dev Invariant B -- "Number of non-empty ranges"
      *
-     * // TODO how to accurately assert the value is on the order of N ?
+     * // QUESTION how to accurately assert the value is on the order of N ?
      *
      * The number of non-empty ranges is O(N).
      */
@@ -68,7 +68,7 @@ contract LibDDRVInvariantTest is Test {
     /**
      * @dev Invariant E -- "Degree of one child of non-root ranges on level 2+"
      *
-     * // TODO clarify if is this one child and one child only, or at least one child (from Lemma 2')
+     * // QUESTION clarify if is this one child and one child only, or at least one child (from Lemma 2')?
      *
      * For any non-root range R_j_(l) (defined as having degree m >= d, where d is the degree bound
      * constant) on level 2 or higher, one of its children has degree >= 2^(m-1+c), where c is a
@@ -92,7 +92,7 @@ contract LibDDRVInvariantTest is Test {
     /**
      * @dev Invariant G -- "Difference between range numbers of smallest-numbered descendents of non-root ranges on level 3+"
      *
-     * // TODO what precisely is smallest-numbered range? —- think smallest index but could be smallest weight / range number
+     * // QUESTION what precisely is smallest-numbered range? —- think smallest index but could be smallest weight / range number
      *
      * For any non-root range R_j_(l) (defined as having degree m >= d, where d is the degree bound
      * constant) where level l >= k >= 3, the range number of the smallest-numbered descendent range
