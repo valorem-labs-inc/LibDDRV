@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 /*
- * Library for generating dynamically-weighted discrete random variates.
+ * Library for generating dynamically- weighted discrete random variates.
  *
  * Copyright © 2023 Valorem Labs Inc.
  *

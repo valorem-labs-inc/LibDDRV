@@ -3,3 +3,6 @@ remappings = ['forge-std/=lib/forge-std/src/', 'solmate/=lib/solmate/src/']
 
 [profile.ci.fuzz]
 runs = 10_000
+
+[invariant]
+fail_on_revert = true
