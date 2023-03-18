@@ -110,9 +110,9 @@ library LibDDRV {
     // Construct a level in the forest of trees
     function construct_level(Forest storage forest, uint256 level, bytes32 ptr, bytes32 head, bytes32 tail)
         internal
-        returns (bytes32 ptr1, bytes32 head1, bytes32 tail1)
+        returns (bytes32 nextPtr, bytes32 nextHead, bytes32 nextTail)
     {
-        (ptr1, head1, tail1) = new_queue();
+        (nextPtr, nextHead, nextTail) = new_queue();
 
         console.log("construct level");
         // While Qₗ ≠ ∅
@@ -133,7 +133,7 @@ library LibDDRV {
             // TODO(Support expanded degree bound)
             if (range.children.length > 1) {
                 Node storage destRange = insert_range(forest, range, level, level + 1, j);
-                enqueue_range(ptr1, head1, tail1, j, destRange);
+                enqueue_range(nextPtr, nextHead, nextTail, j, destRange);
 
                 /* TODO: Delete range(?). An explicit call to deleteRange is made in the pseudo, but
                 it's unclear if this is to simply remove the weight of the range from the level, and
@@ -150,7 +150,7 @@ library LibDDRV {
             }
             assembly {
                 // Cap off the level queue by incrementing the free memory pointer
-                mstore(fp, add(tail1, word))
+                mstore(fp, add(nextTail, word))
             }
         }
     }
@@ -190,10 +190,6 @@ library LibDDRV {
     }
 
     function enqueue_range(bytes32 ptr, bytes32 head, bytes32 tail, uint256 j, Node storage range) internal {
-        uint256 flags;
-        assembly {
-            flags := mload(ptr)
-        }
         assembly {
             // Check if the bit j is set in the header
             if gt(shr(255, shl(sub(255, j), mload(ptr))), 0) {
@@ -205,8 +201,6 @@ library LibDDRV {
                 // Update the tail of the queue
                 tail := add(tail, word)
             }
-            // Cap off the level queue by incrementing the free memory pointer
-            mstore(fp, add(tail, word))
         }
     }
 
