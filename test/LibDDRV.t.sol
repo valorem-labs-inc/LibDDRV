@@ -83,11 +83,11 @@ contract TestDDRV is Test {
         console.log("l2 index %s", l2RangeIndex);
 
         // range weighs 22, and is not a root range
-        assertEq(forest.levels[1].ranges[l1RangeIndex].weight, expectedWeight); 
+        assertEq(forest.levels[1].ranges[l1RangeIndex].weight, expectedWeight);
         assertEq(forest.levels[1].roots, 0);
 
         // range weighs 22, and is the only root range
-        assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight); 
+        assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight);
         assertEq(forest.levels[2].roots, l2RangeIndex);
     }
 
@@ -115,11 +115,11 @@ contract TestDDRV is Test {
         console.log("l2 index %s", l2RangeIndex);
 
         // range weighs 22, and is not a root range
-        assertEq(forest.levels[1].ranges[l1RangeIndex].weight, expectedWeight); 
+        assertEq(forest.levels[1].ranges[l1RangeIndex].weight, expectedWeight);
         assertEq(forest.levels[1].roots, 0);
 
         // range weighs 22, and is the only root range
-        assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight); 
+        assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight);
         assertEq(forest.levels[2].roots, l2RangeIndex);
     }
 
