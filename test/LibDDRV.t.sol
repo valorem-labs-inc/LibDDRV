@@ -105,20 +105,23 @@ contract TestDDRV is Test {
         // total weight should be the sum
         assertEq(forest.weight, expectedWeight);
         assertEq(forest.levels[0].weight, expectedWeight);
+        console.log("assert l1 weight");
+        // Should be zero, since we only add weight for root ranges
+        assertEq(forest.levels[1].weight, 0);
 
-        assertEq(forest.levels[1].weight, expectedWeight);
-
-        uint256 l1RangeIndex = LibDDRV.floor_ilog(7);
-        uint256 l2RangeIndex = LibDDRV.floor_ilog(expectedWeight);
+        uint256 l1RangeIndex = LibDDRV.floor_ilog(7) + 1;
+        uint256 l2RangeIndex = LibDDRV.floor_ilog(expectedWeight) + 1;
 
         console.log("l1 index %s", l1RangeIndex);
         console.log("l2 index %s", l2RangeIndex);
 
         // range weighs 22, and is not a root range
-        assertEq(forest.levels[1].ranges[l1RangeIndex].weight, expectedWeight);
+        console.log("assert l1 index range weight");
+        assertEq(forest.levels[1].ranges[l1RangeIndex].weight, 22);
         assertEq(forest.levels[1].roots, 0);
 
         // range weighs 22, and is the only root range
+        console.log("assert l2 index range weight");
         assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight);
         assertEq(forest.levels[2].roots, l2RangeIndex);
     }
