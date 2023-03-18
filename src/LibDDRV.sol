@@ -89,9 +89,13 @@ library LibDDRV {
             forest.weight += weight;
 
             // TODO: verify skip if range already enqueued
-            enqueue_range(ptr, head, tail, j, destRange);
+            tail = enqueue_range(ptr, head, tail, j, destRange);
         }
 
+        assembly {
+            // Cap off the level queue by incrementing the free memory pointer
+            mstore(fp, add(tail, word))
+        }
         // Construct the forest of trees from the bottom up
         update_levels(ptr, head, tail, forest);
     }
@@ -99,6 +103,7 @@ library LibDDRV {
     // Propogate upwards any changes in the the element or range weights
     function update_levels(bytes32 ptr, bytes32 head, bytes32 tail, Forest storage forest) internal {
         uint256 l = 1;
+
         while (head != tail) {
             // Set Qₗ₊₁
             (ptr, head, tail) = construct_level(forest, l, ptr, head, tail);
@@ -113,6 +118,7 @@ library LibDDRV {
         returns (bytes32 nextPtr, bytes32 nextHead, bytes32 nextTail)
     {
         (nextPtr, nextHead, nextTail) = new_queue();
+
 
         console.log("construct level");
         // While Qₗ ≠ ∅
@@ -133,7 +139,7 @@ library LibDDRV {
             // TODO(Support expanded degree bound)
             if (range.children.length > 1) {
                 Node storage destRange = insert_range(forest, range, level, level + 1, j);
-                enqueue_range(nextPtr, nextHead, nextTail, j, destRange);
+                nextTail = enqueue_range(nextPtr, nextHead, nextTail, j, destRange);
 
                 /* TODO: Delete range(?). An explicit call to deleteRange is made in the pseudo, but
                 it's unclear if this is to simply remove the weight of the range from the level, and
@@ -189,17 +195,26 @@ library LibDDRV {
         }
     }
 
-    function enqueue_range(bytes32 ptr, bytes32 head, bytes32 tail, uint256 j, Node storage range) internal {
+    function enqueue_range(bytes32 ptr, bytes32 head, bytes32 tail, uint256 j, Node storage range) internal returns(
+        bytes32 nextTail) {
         assembly {
             // Check if the bit j is set in the header
-            if gt(shr(255, shl(sub(255, j), mload(ptr))), 0) {
+            // The smallest current value of j is 1, corresponding to the half open range
+            // [1, 2). The reserved word at the front of the queue correspondingly does not
+            // make use of the 0th bit. 
+            // if the bitwise AND of the the header and 1 shifted to the jth bit is zero, the
+            // range is already in the queue.
+            if eq(and(mload(ptr), shl(j, 1)), 0) {
                 // If it's not, add the range to the queue
                 // Set the bit j
                 mstore(ptr, or(shl(j, 1), mload(ptr)))
                 // Store the range in the queue
                 mstore(tail, range.slot)
                 // Update the tail of the queue
-                tail := add(tail, word)
+                nextTail := add(tail, word)
+            }
+            if eq(nextTail, 0) {
+                nextTail := tail
             }
         }
     }
