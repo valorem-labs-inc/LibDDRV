@@ -120,8 +120,8 @@ library LibDDRV {
             // Dequeue range from storage
             Node storage range;
             assembly {
-                range.slot := mload(tail)
-                tail := sub(word, tail)
+                range.slot := mload(head)
+                head := add(word, head)
             }
             // Get weight and range number
             uint256 weight = range.weight;
