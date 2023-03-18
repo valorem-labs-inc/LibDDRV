@@ -43,6 +43,19 @@ struct Forest {
     mapping(uint256 => Level) levels;
 }
 
+// A struct representing a FILO queue of ranges to be processed
+struct Queue {
+    // points to the reserved word at the head of the queue to indicate
+    // which ranges have been enqueued; enqueue_range is skipped if the
+    // range is already enqueued
+    bytes32 ptr;
+    // points to the last element in the FILO queue
+    bytes32 head;
+    // points to the first element in the FILO queue; items will be enqueued
+    // and poppoed off at this location
+    bytes32 tail;
+}
+
 // A library which takes in weights and uniform random variates and uses them
 // to generate dynamically weighted discrete probability mass function random
 // variates.
