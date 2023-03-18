@@ -76,11 +76,6 @@ library LibDDRV {
             weight = weights[i];
             j = floor_ilog(weight) + 1;
             Node storage element = forest.levels[0].ranges[i];
-            /*
-            console.log("i: %i", i);
-            console.log("weights[i]: %s", weight);
-            console.log("ilog weights[i]: %s", j);
-            */
 
             // Add this index to table level zero.
             element.weight = weight;
