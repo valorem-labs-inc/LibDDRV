@@ -150,6 +150,7 @@ library LibDDRV {
                 the algorithm, as written, would not terminate because of the conditioninal on this branch.
                  */
             } else {
+                // this is a root range with no parent
                 // add range weight to level; add index to level table (roots)
                 forest.levels[level].weight += weight;
                 forest.levels[level].roots += j;
@@ -190,7 +191,7 @@ library LibDDRV {
             mstore(fp, add(ptr, fp))
             // One word is reserved here to act as a header for the queue,
             // to check if a range is already in the queue.
-            head := add(fp, word)
+            head := add(ptr, word)
             tail := head
         }
     }
