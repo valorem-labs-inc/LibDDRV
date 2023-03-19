@@ -38,6 +38,14 @@ contract TestDDRV is Test {
         }
     }
 
+    // Writes the range of values [start, end) to the weights array, starting at index
+    function addRange(uint256 index, uint256 start, uint256 end, uint256[] memory weights) internal returns (uint256[] memory){
+        for (uint256 i = start; i < end; i++) {
+            weights[index++] = i;
+        }
+        return weights;
+    }
+
     /*======================== TESTS ========================*/
 
     function testPreprocess_simple() public {
@@ -109,6 +117,41 @@ contract TestDDRV is Test {
         console.log("assert l2 index range weight");
         assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight);
         assertEq(forest.levels[2].roots, l2RangeIndex);
+    }
+
+    function testPreprocess_twoTrees() public {
+        // A test which adds weights 4-7, and 64-127 to the forest
+        uint256 expectedWeight = 6134; // E(64-127) == 6112, + 22 = 6134
+        uint256[] memory weights = new uint256[](68);
+        addRange(0, 4, 8, weights); // -> elts into R1,3; R1,3 into R2,5 (E(4-7) == 22, ilg2(22) = 5)
+        addRange(4, 64, 128, weights); // -> elts into R1,7; R1,7 into R2,13 (ilg2(6112) = 13)
+
+        LibDDRV.preprocess(weights, forest);
+        assertEq(forest.weight, expectedWeight);
+        assertEq(forest.levels[0].weight, expectedWeight);
+        // Should be zero, since we only add weight for root ranges
+        assertEq(forest.levels[1].weight, 0);
+        assertEq(forest.levels[1].roots, 0);
+
+        // roots field is the sum of the root range indices
+        assertEq(forest.levels[2].roots, 5 + 13);
+        assertEq(forest.levels[2].weight, expectedWeight);
+
+        // R1,3 should have weight 22, and 4 children
+        assertEq(forest.levels[1].ranges[3].weight, 22);
+        assertEq(forest.levels[1].ranges[3].children.length, 4);
+
+        // R1,7 should have weight 6112, and 64 children
+        assertEq(forest.levels[1].ranges[7].weight, 6112);
+        assertEq(forest.levels[1].ranges[7].children.length, 64);
+
+        // R2,5 should have weight 22, and 1 child
+        assertEq(forest.levels[2].ranges[5].weight, 22);
+        assertEq(forest.levels[2].ranges[5].children.length, 1);
+
+        // R2,13 should have weight 6112, and 1 child
+        assertEq(forest.levels[2].ranges[13].weight, 6112);
+        assertEq(forest.levels[2].ranges[13].children.length, 1);
     }
 
     function testUpdate_simple() public {
