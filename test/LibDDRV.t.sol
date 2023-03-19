@@ -39,7 +39,11 @@ contract TestDDRV is Test {
     }
 
     // Writes the range of values [start, end) to the weights array, starting at index
-    function addRange(uint256 index, uint256 start, uint256 end, uint256[] memory weights) internal returns (uint256[] memory){
+    function addRange(uint256 index, uint256 start, uint256 end, uint256[] memory weights)
+        internal
+        pure
+        returns (uint256[] memory)
+    {
         for (uint256 i = start; i < end; i++) {
             weights[index++] = i;
         }
@@ -88,10 +92,7 @@ contract TestDDRV is Test {
     function testPreprocess_oneTree() public {
         uint256[] memory weights = new uint256[](4);
         uint256 expectedWeight = 22; //E i [4,7]
-        weights[0] = 4;
-        weights[1] = 5;
-        weights[2] = 6;
-        weights[3] = 7;
+        addRange(0, 4, 8, weights);
 
         LibDDRV.preprocess(weights, forest);
 
