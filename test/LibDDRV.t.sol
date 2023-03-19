@@ -61,18 +61,20 @@ contract TestDDRV is Test {
     }
 
     /*
-                    R2,5  Step 3: pop enqueued range R2,5 from queue and check if it has >1 child
+                          R2,5  Step 3: pop enqueued range R2,5 from queue and check if it has >1 child
                         /				it does not, so add R2,5 to the roots on level 2
-                        / 				Done!
+                      / 				Done!
                     / 
-                /  
+                  /  
                 /
             R1,3			Step 2: pop enqueued range R1,3 from queue, and check if it has >1 child
-        / |  \  \					it does, so calculate L2 range that R1,3 falls into
+         / |  \  \					it does, so calculate L2 range that R1,3 falls into
         /  |   \    \					ilg2(4+5+6+7) = 5
-    /   |     \    \				add, enqueue R2,5
+      /   |     \    \				add, enqueue R2,5
     /    |     |     \
-    4 	5	6	7		Step 1: 4,5,6,7 e [2^2, 2^3] => 2^j-1 = 2^2 => j = 3; Create range R1,3 and augment weight; enqueue R1,3
+    4 	 5     6      7	    Step 1: 4,5,6,7 e [2^2, 2^3] => 2^j-1 = 2^2 => j = 3; 
+                            Create range R1,3 and augment weight; 
+                            enqueue R1,3
     */
     // Test that the forest is built correctly when there are more 4 elements
     function testPreprocess_oneTree() public {
