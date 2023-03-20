@@ -161,8 +161,27 @@ contract TestDDRV is Test {
         weights[1] = 50;
 
         LibDDRV.preprocess(weights, forest);
+        // Log2(50) = 6, so the range is R1,6
+        assertEq(forest.levels[1].ranges[6].weight, 100);
+        // R1,6 should have two children
+        assertEq(forest.levels[1].ranges[6].children.length, 2);
+        // R2,7 should have weight 100, and 1 child
+        assertEq(forest.levels[2].ranges[7].weight, 100);
+        assertEq(forest.levels[2].ranges[7].children.length, 1);
+
+        console.log("updating element");
+
         LibDDRV.update_element(0, 30, forest);
+        console.log("l0 weight is 80");
+        assertEq(forest.levels[0].weight, 80);
+        console.log("first elt weight is 30");
         assertEq(forest.levels[0].ranges[0].weight, 30);
+        console.log("second elt weight is 50");
+        assertEq(forest.levels[0].ranges[1].weight, 50);
+        console.log("forest weight is 80");
+        assertEq(forest.weight, 80);
+        console.log("R1,6 is 80");
+        assertEq(forest.levels[1].ranges[6].weight, 80);
     }
 
     function testGenerate_simple() public {
