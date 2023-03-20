@@ -4,12 +4,12 @@ pragma solidity ^0.8.13;
 import {StdUtils} from "../../lib/forge-std/src/StdUtils.sol";
 import {Vm} from "../../lib/forge-std/src/Vm.sol";
 
-import {ContractUsingLib} from "./ContractUsingLib.sol";
+import {ContractUnderTest} from "./ContractUnderTest.sol";
 
 contract Handler is StdUtils {
     mapping(bytes32 => uint256) public numCalls;
 
-    ContractUsingLib public contractUsingLib;
+    ContractUnderTest public c;
 
     address[] internal accounts;
     address internal currentAccount;
@@ -38,12 +38,12 @@ contract Handler is StdUtils {
         accounts.push(address(0xA10));
 
         // Setup contract using LibDDRV
-        contractUsingLib = ContractUsingLib(_contractUsingLib);
+        c = ContractUnderTest(_contractUsingLib);
     }
 
     function preprocess(uint256[] memory weights, uint256 accountIndex) public useRandomAccount(accountIndex) {
         numCalls["preprocess"]++;
-        contractUsingLib.preprocess(weights);
+        c.preprocess(weights);
     }
 
     function insert_element(uint256 index, uint256 weight, uint256 accountIndex)
@@ -51,7 +51,7 @@ contract Handler is StdUtils {
         useRandomAccount(accountIndex)
     {
         numCalls["insert_element"]++;
-        contractUsingLib.insert_element(index, weight);
+        c.insert_element(index, weight);
     }
 
     function update_element(uint256 index, uint256 weight, uint256 accountIndex)
@@ -60,7 +60,7 @@ contract Handler is StdUtils {
     {
         numCalls["update_element"]++;
         // TODO add element insertions to ensure element exists
-        contractUsingLib.update_element(index, weight);
+        c.update_element(index, weight);
     }
 
     function generate(uint256 index, uint256 seed, uint256 accountIndex)
@@ -69,6 +69,6 @@ contract Handler is StdUtils {
         returns (uint256)
     {
         numCalls["generate"]++;
-        return contractUsingLib.generate(seed);
+        return c.generate(seed);
     }
 }

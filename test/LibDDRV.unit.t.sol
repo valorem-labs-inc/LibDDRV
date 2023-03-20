@@ -18,6 +18,10 @@ contract LibDDRVUnitTest is Test {
         }
     }
 
+    /*//////////////////////////////////////////////////////////////
+    //  Preprocess
+    //////////////////////////////////////////////////////////////*/
+
     function testPreprocess() public {
         uint256 countHeads = 0;
         uint256 countTails = 0;
@@ -41,9 +45,29 @@ contract LibDDRVUnitTest is Test {
         //emit log_named_uint("lvl1 roots", forest.levels[1].roots);
     }
 
-    function testInsert() public {
-        assertTrue(false);
+    /*//////////////////////////////////////////////////////////////
+    //  Insert
+    //////////////////////////////////////////////////////////////*/
+
+    function test_insert() public {
+        // LibDDRV.insert_element(0, 5, forest);
+
+        assertEq(forest.weight, 5, "forest weight");
+        assertEq(forest.levels[0].weight, 5, "level 0 weight");
+        assertEq(forest.levels[1].weight, 5, "level 1 weight");
     }
+
+    function testFuzz_insert(uint256 weight) public {
+        // LibDDRV.insert_element(0, weight, forest);
+
+        assertEq(forest.weight, weight, "forest weight");
+        assertEq(forest.levels[0].weight, weight, "level 0 weight");
+        assertEq(forest.levels[1].weight, weight, "level 1 weight");
+    }
+
+    /*//////////////////////////////////////////////////////////////
+    //  Update
+    //////////////////////////////////////////////////////////////*/
 
     function testUpdate() public {
         uint256 countHeads = 0;
@@ -56,6 +80,10 @@ contract LibDDRVUnitTest is Test {
         LibDDRV.update_element(0, 30, forest);
         assertEq(forest.levels[0].ranges[0].weight, 30);
     }
+
+    /*//////////////////////////////////////////////////////////////
+    //  Generate
+    //////////////////////////////////////////////////////////////*/
 
     function testGenerate() public {
         uint256 countHeads = 0;

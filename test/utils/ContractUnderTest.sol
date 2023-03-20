@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "../../src/LibDDRV.sol";
 
-contract ContractUsingLib {
+contract ContractUnderTest {
     uint256 public numberOfElements;
     uint256 public numberOfLevels;
     uint256 public numberOfRanges;

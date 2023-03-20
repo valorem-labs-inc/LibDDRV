@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
+
 import {FixedPointMathLib} from "solmate/utils/FixedPointMathLib.sol";
 
 import "../src/LibDDRV.sol";
@@ -29,8 +30,8 @@ contract LibDDRVMonteCarloTest is Test {
         uint256[] memory elements = new uint256[](numElements);
         uint256[] memory expectedProbabilities = new uint256[](numElements);
 
-        // Preprocess.
-        // LibDDRV.preprocess(elements, forest);
+        // Preprocess with zero elements.
+        // LibDDRV.preprocess(forest);
 
         // Insert 100 elements.
         for (uint256 i = 0; i < numElements; i++) {
@@ -38,7 +39,7 @@ contract LibDDRVMonteCarloTest is Test {
             totalWeight += element;
             elements[i] = element;
 
-            // LibDDRV.insert_element(i, element, forest);
+            LibDDRV.insert_element(i, element, forest);
         }
 
         // Calculate approximate expected probabilities.

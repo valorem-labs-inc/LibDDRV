@@ -93,7 +93,7 @@ library LibDDRV {
         return n;
     }
 
-    // @retrun integer ⌊lg n⌋ of x.
+    /// @return integer ⌊lg n⌋ of x.
     function floor_ilog(uint256 x) internal pure returns (uint256) {
         return (255 - nlz(x));
     }
