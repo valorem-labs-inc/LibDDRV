@@ -5,7 +5,8 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "src/LibDDRV.sol";
 
-contract TestDDRV is Test {
+/// @notice Unit tests for LibDDRV
+contract LibDDRVUnitTest is Test {
     Forest internal forest;
     uint256[] internal seeds;
     uint256 SEED_COUNT = 1000;
@@ -155,6 +156,30 @@ contract TestDDRV is Test {
         assertEq(forest.levels[2].ranges[13].children.length, 1);
     }
 
+    /*//////////////////////////////////////////////////////////////
+    //  Insert
+    //////////////////////////////////////////////////////////////*/
+
+    function test_insert() public {
+        // LibDDRV.insert_element(0, 5, forest);
+
+        assertEq(forest.weight, 5, "forest weight");
+        assertEq(forest.levels[0].weight, 5, "level 0 weight");
+        assertEq(forest.levels[1].weight, 5, "level 1 weight");
+    }
+
+    function testFuzz_insert(uint256 weight) public {
+        // LibDDRV.insert_element(0, weight, forest);
+
+        assertEq(forest.weight, weight, "forest weight");
+        assertEq(forest.levels[0].weight, weight, "level 0 weight");
+        assertEq(forest.levels[1].weight, weight, "level 1 weight");
+    }
+
+    /*//////////////////////////////////////////////////////////////
+    //  Update
+    //////////////////////////////////////////////////////////////*/
+
     function testUpdate_simple() public {
         uint256[] memory weights = new uint256[](2);
         weights[0] = 50;
@@ -193,6 +218,10 @@ contract TestDDRV is Test {
         uint256 element = LibDDRV.generate(forest, 0);
         assertTrue(element == 0 || element == 1);
     }
+
+    /*//////////////////////////////////////////////////////////////
+    //  Generate
+    //////////////////////////////////////////////////////////////*/
 
     function testGenerate() public {
         uint256 countHeads = 0;
