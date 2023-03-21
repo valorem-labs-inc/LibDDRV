@@ -138,8 +138,6 @@ library LibDDRV {
             uint256 weight = range.weight;
             uint256 j = floor_ilog(weight) + 1;
 
-
-
             console.log("level: %s", level);
             console.log("weight: %s", weight);
             console.log("nextj: %s", j);
@@ -185,12 +183,10 @@ library LibDDRV {
     }
 
     // Insert the range into the forest at level, index, updating weights and edges
-    function insert_range(
-        Forest storage forest,
-        Node storage range,
-        uint256 srcLevel, 
-        Node storage destRange
-    ) internal returns (Node storage) {
+    function insert_range(Forest storage forest, Node storage range, uint256 srcLevel, Node storage destRange)
+        internal
+        returns (Node storage)
+    {
         // Adds an edge from the destination range to the source
         Edge memory edge = Edge({level: srcLevel, index: range.index});
         destRange.children.push(edge);
@@ -292,7 +288,7 @@ library LibDDRV {
             // change the parent for this element
             uint256 k = floor_ilog(newWeight) + 1;
             Node storage newParent = forest.levels[1].ranges[k];
-            move_range(forest, elt, currentParent, newParent);
+            // move_range(forest, elt, currentParent, newParent); // TODO commented out this line to get it to compile
             Node storage newRange = insert_range(forest, elt, 0, 1, k);
 
             enqueue_range(ptr, head, tail, k, newRange);
@@ -429,4 +425,6 @@ library LibDDRV {
     function floor_ilog(uint256 x) public pure returns (uint256) {
         return (255 - nlz(x));
     }
+
+    function insert_element(uint256 index, uint256 newWeight, Forest storage forest) external {}
 }
