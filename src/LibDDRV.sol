@@ -64,7 +64,7 @@ library LibDDRV {
 
     // Preprocess an array of elements and their weights into a forest of trees.
     // TODO(This presently supports natural number weights, could easily support posits)
-    function preprocess(uint256[] calldata weights, Forest storage forest) external {
+    function preprocess(Forest storage forest, uint256[] calldata weights) external {
         (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue();
 
         uint256 n = weights.length;
@@ -100,11 +100,11 @@ library LibDDRV {
         console.log("head: %s", uint256(head));
         console.log("tail: %s", uint256(tail));
         // Construct the forest of trees from the bottom up
-        update_levels(ptr, head, tail, forest);
+        update_levels(forest, ptr, head, tail);
     }
 
     // Propogate upwards any changes in the the element or range weights
-    function update_levels(bytes32 ptr, bytes32 head, bytes32 tail, Forest storage forest) internal {
+    function update_levels(Forest storage forest, bytes32 ptr, bytes32 head, bytes32 tail) internal {
         uint256 l = 1;
 
         while (head != tail) {
@@ -255,11 +255,16 @@ library LibDDRV {
         }
     }
 
+
+    function insert_element(Forest storage forest, uint256 index, uint256 newWeight) external {
+
+    }
+
     // TODO(can this take a list of elements?)
     // TODO b-factor
     // TODO: can one enqueue 2 levels above or does this mess up the ordering
     // Update an element's weight in the forest of trees
-    function update_element(uint256 index, uint256 newWeight, Forest storage forest) external {
+    function update_element(Forest storage forest, uint256 index, uint256 newWeight) external {
         // Set up an in memory queue object
         (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue();
 
@@ -301,7 +306,7 @@ library LibDDRV {
         // enqueue the current range for an update
         enqueue_range(ptr, head, tail, j, currentParent);
 
-        update_levels(ptr, head, tail, forest);
+        update_levels(forest, ptr, head, tail);
     }
 
     function generate(Forest storage forest, uint256 seed) external view returns (uint256) {
@@ -425,6 +430,4 @@ library LibDDRV {
     function floor_ilog(uint256 x) public pure returns (uint256) {
         return (255 - nlz(x));
     }
-
-    function insert_element(uint256 index, uint256 newWeight, Forest storage forest) external {}
 }

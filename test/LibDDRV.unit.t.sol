@@ -58,7 +58,7 @@ contract LibDDRVUnitTest is Test {
         weights[0] = 50;
         weights[1] = 50;
 
-        LibDDRV.preprocess(weights, forest);
+        LibDDRV.preprocess(forest, weights);
 
         // total weight should be the sum
         assertEq(forest.weight, 100);
@@ -95,7 +95,7 @@ contract LibDDRVUnitTest is Test {
         uint256 expectedWeight = 22; //E i [4,7]
         addRange(0, 4, 8, weights);
 
-        LibDDRV.preprocess(weights, forest);
+        LibDDRV.preprocess(forest, weights);
 
         // total weight should be the sum
         assertEq(forest.weight, expectedWeight);
@@ -128,7 +128,7 @@ contract LibDDRVUnitTest is Test {
         addRange(0, 4, 8, weights); // -> elts into R1,3; R1,3 into R2,5 (E(4-7) == 22, ilg2(22) = 5)
         addRange(4, 64, 128, weights); // -> elts into R1,7; R1,7 into R2,13 (ilg2(6112) = 13)
 
-        LibDDRV.preprocess(weights, forest);
+        LibDDRV.preprocess(forest, weights);
         assertEq(forest.weight, expectedWeight);
         assertEq(forest.levels[0].weight, expectedWeight);
         // Should be zero, since we only add weight for root ranges
@@ -185,7 +185,7 @@ contract LibDDRVUnitTest is Test {
         weights[0] = 50;
         weights[1] = 50;
 
-        LibDDRV.preprocess(weights, forest);
+        LibDDRV.preprocess(forest, weights);
         // Log2(50) = 6, so the range is R1,6
         assertEq(forest.levels[1].ranges[6].weight, 100);
         // R1,6 should have two children
@@ -196,7 +196,7 @@ contract LibDDRVUnitTest is Test {
 
         console.log("updating element");
 
-        LibDDRV.update_element(0, 30, forest);
+        LibDDRV.update_element(forest, 0, 30);
         console.log("l0 weight is 80");
         assertEq(forest.levels[0].weight, 80);
         console.log("first elt weight is 30");
@@ -214,7 +214,7 @@ contract LibDDRVUnitTest is Test {
         weights[0] = 50;
         weights[1] = 50;
 
-        LibDDRV.preprocess(weights, forest);
+        LibDDRV.preprocess(forest, weights);
         uint256 element = LibDDRV.generate(forest, 0);
         assertTrue(element == 0 || element == 1);
     }
@@ -230,7 +230,7 @@ contract LibDDRVUnitTest is Test {
         weights[0] = 50;
         weights[1] = 50;
 
-        LibDDRV.preprocess(weights, forest);
+        LibDDRV.preprocess(forest, weights);
 
         // flip 1000 coins
         for (uint256 i = 0; i < SEED_COUNT; i++) {
