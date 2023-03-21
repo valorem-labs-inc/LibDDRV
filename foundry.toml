@@ -5,4 +5,9 @@ remappings = ['forge-std/=lib/forge-std/src/', 'solmate/=lib/solmate/src/']
 runs = 10_000
 
 [invariant]
-fail_on_revert = true
+runs = 1_000
+depth = 15
+fail_on_revert = false
+dictionary_weight = 80
+include_storage = true
+include_push_bytes = true

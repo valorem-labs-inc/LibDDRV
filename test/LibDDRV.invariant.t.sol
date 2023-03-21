@@ -83,7 +83,7 @@ contract LibDDRVInvariantTest is Test {
     /**
      * @dev Invariant D -- "Difference between range number of children and of non-root range itself"
      *
-     * For any non-root range Rⱼ⁽ℓ⁾ with degree m >= 2, the difference between the range number of its 
+     * For any non-root range Rⱼ⁽ℓ⁾ with degree m >= 2, the difference between the range number of its
      * children jʹ and its own range number j satisfies the inequality lg m - 1 < jʹ - j < lg m + 1.
      *
      * (from Lemma 1)
@@ -192,8 +192,6 @@ contract LibDDRVInvariantTest is Test {
 
         assertTrue(false, "Number of descendents of non-root ranges on level 3+"); // TEMP
     }
-
-
 
     /*//////////////////////////////////////////////////////////////
     //  Modified Data Structure and Algorithm
