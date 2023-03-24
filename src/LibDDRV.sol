@@ -161,10 +161,10 @@ library LibDDRV {
                 forest.levels[level].weight += weight;
                 forest.levels[level].roots += j;
             }
-            assembly {
-                // Cap off the level queue by incrementing the free memory pointer
-                mstore(fp, add(nextTail, word))
-            }
+        }
+        assembly {
+            // Cap off the level queue by incrementing the free memory pointer
+            mstore(fp, add(nextTail, word))
         }
     }
 
