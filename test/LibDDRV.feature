@@ -1,4 +1,4 @@
-Feature: Dynamic Discrete Random Variate Generation
+Feature: Dynamic Discrete Random Variates
 
     As a Solidity Developer,
     I want to generate random variates from a discrete distribution of dynamically weighted elements in sublinear time,
@@ -7,16 +7,59 @@ Feature: Dynamic Discrete Random Variate Generation
     # Preprocess
 
     Scenario: Preprocess 0 Elements
+        Given An empty and uninstantiated Forest
+        When I preprocess the Forest
+        Then The Forest should be instantiated and empty
 
     Scenario: Preprocess 1 Element
+        Given An empty and uninstantiated Forest
+        When I preprocess the Forest with the following 1 Element:
+            | Element | Weight |
+            | 1       | 10     |
+        Then The Forest should have the following structure:
+            | Element | E Weight | Parent | P Weight |
+            | 1       | 10       | R₄⁽¹⁾  | 10       |
 
     Scenario: Preprocess 10 Elements
-
-    Scenario: Preprocess 100 Elements
+        Given An empty and uninstantiated Forest
+        When I preprocess the Forest with the following 10 Elements:
+            | Element | Weight |
+            | 1       | 5      |
+            | 2       | 4      |
+            | 3       | 5      |
+            | 4       | 7      |
+            | 5       | 6      |
+            | 6       | 4      |
+            | 7       | 4      |
+            | 8       | 5      |
+            | 9       | 6      |
+            | 10      | 7      |
+        Then The Forest should have the following structure: TODO
+            | Element | E Weight | Parent | P Weight |
+            | 1       | 5        | R₄⁽¹⁾  | 53       |
+            | 2       | 4        | R₄⁽¹⁾  | 53       |
+            | 3       | 5        | R₄⁽¹⁾  | 53       |
+            | 4       | 7        | R₄⁽¹⁾  | 53       |
+            | 5       | 6        | R₄⁽¹⁾  | 53       |
+            | 6       | 4        | R₄⁽¹⁾  | 53       |
+            | 7       | 4        | R₄⁽¹⁾  | 53       |
+            | 8       | 5        | R₄⁽¹⁾  | 53       |
+            | 9       | 6        | R₄⁽¹⁾  | 53       |
+            | 10      | 7        | R₄⁽¹⁾  | 53       |
 
     # Insert
 
     Scenario: Insert 1 Element
+        Given A Forest with the following 1 Element:
+            | Element | Weight |
+            | 1       | 7      |
+        When I insert the following 1 Element:
+            | Element | Weight |
+            | 2       | 5      |
+        Then The Forest should have the following structure: TODO
+            | Element | E Weight | Parent | P Weight |
+            | 1       | 10       | R₄⁽¹⁾  | 12       |
+            | 2       | 5        | R₄⁽¹⁾  | 12       |
 
     Scenario: Insert 1 Element 10 times
 
@@ -73,20 +116,23 @@ Feature: Dynamic Discrete Random Variate Generation
             | 11      | 10       | R₄⁽¹⁾  | (55)     | R₆⁽²⁾       | 55        |
             | 4       | 20       | R₅⁽¹⁾  | 20       |             |           |
 
+    @Revert
     Scenario: A -- Update 1 Element, no change in weight, no change in parent
         When I update Element 8 from weight 5 to weight 5
-        Then The parent of Element 8 should still be Range R₃⁽¹⁾
-        And There should be no change in the total weight, Levels, or structure of the Forest
+        Then The transaction should revert with a NewWeightMustBeDifferent error
 
     Scenario: B -- Update 1 Element, decrease weight, no change in parent
         When I update Element 8 from weight 5 to weight 4
         Then The parent of Element 8 should still be Range R₃⁽¹⁾
         And The total weight of the Forest should be 99
-        And There should be 2 Levels in the Forest
-        And The weight of Level 1 should be 20
+        And There should still be 2 Levels in the Forest
+        And The weight of Level 1 should still be 20
         And The weight of Level 2 should be 79
+        And The weight of Range R₃⁽¹⁾ should be 24
         And The weight of Range R₅⁽²⁾ should be 24
-        And The weight of Range R₆⁽²⁾ should be 55
+        And The weight of Range R₄⁽¹⁾ should still be 55
+        And The weight of Range R₆⁽²⁾ should still be 55
+        And The weight of Range R₅⁽¹⁾ should still be 20
         And The Forest should not change its structure
 
     Scenario: C -- Update 1 Element, decrease weight, moves to lower range numbered-parent
@@ -158,16 +204,16 @@ Feature: Dynamic Discrete Random Variate Generation
         And The weight of Range R₆⁽³⁾ should be 72
         And The Forest should have the following structure:
             | Element | E Weight | Parent | P Weight | Grandparent | GP Weight | Greatgrandparent | GGP Weight |
-            | 2       | 5        | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₆⁽³⁾            | 72         |
-            | 3       | 7 *      | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₆⁽³⁾            | 72         |
-            | 5       | 5        | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₆⁽³⁾            | 72         |
-            | 6       | 5        | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₆⁽³⁾            | 72         |
-            | 7       | 5        | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₆⁽³⁾            | 72         |
-            | 8       | 5        | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₆⁽³⁾            | 72         |
-            | 1       | 10       | R₄⁽¹⁾  | (40)     | R₆⁽²⁾       | (72)      | R₆⁽³⁾            | 72         |
-            | 9       | 10       | R₄⁽¹⁾  | (40)     | R₆⁽²⁾       | (72)      | R₆⁽³⁾            | 72         |
-            | 10      | 10       | R₄⁽¹⁾  | (40)     | R₆⁽²⁾       | (72)      | R₆⁽³⁾            | 72         |
-            | 11      | 10       | R₄⁽¹⁾  | (40)     | R₆⁽²⁾       | (72)      | R₆⁽³⁾            | 72         |
+            | 2       | 5        | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₇⁽³⁾            | 72         |
+            | 3       | 7 *      | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₇⁽³⁾            | 72         |
+            | 5       | 5        | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₇⁽³⁾            | 72         |
+            | 6       | 5        | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₇⁽³⁾            | 72         |
+            | 7       | 5        | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₇⁽³⁾            | 72         |
+            | 8       | 5        | R₃⁽¹⁾  | (32)     | R₆⁽²⁾       | (72)      | R₇⁽³⁾            | 72         |
+            | 1       | 10       | R₄⁽¹⁾  | (40)     | R₆⁽²⁾       | (72)      | R₇⁽³⁾            | 72         |
+            | 9       | 10       | R₄⁽¹⁾  | (40)     | R₆⁽²⁾       | (72)      | R₇⁽³⁾            | 72         |
+            | 10      | 10       | R₄⁽¹⁾  | (40)     | R₆⁽²⁾       | (72)      | R₇⁽³⁾            | 72         |
+            | 11      | 10       | R₄⁽¹⁾  | (40)     | R₆⁽²⁾       | (72)      | R₇⁽³⁾            | 72         |
             | 4       | 20       | R₅⁽¹⁾  | 20       |             |           |                  |            |
 
     Scenario: G -- Update 1 Element, increase weight, moves to higher range numbered-parent and -grandparent
@@ -328,6 +374,14 @@ Feature: Dynamic Discrete Random Variate Generation
             | 10      | 10       | R₄⁽¹⁾  | (55)     | R₆⁽²⁾       | 87        |
             | 11      | 10       | R₄⁽¹⁾  | (55)     | R₆⁽²⁾       | 87        |
             | 4       | 20       | R₅⁽¹⁾  | 20       |             |           |
+
+    Scenario: TODO Big jump
+
+    Scenario: TODO 4 Levels
+    Add Element 12 with weight 30
+    Parent should R₅⁽¹⁾ with weight 50
+    Grandparent should be R₆⁽²⁾ with weight XYZ
+    Great Grandparent should be R₇⁽³⁾ with weight XYZ
 
     # Generate
 
