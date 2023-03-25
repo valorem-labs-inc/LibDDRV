@@ -109,14 +109,14 @@ library LibDDRV {
 
         while (head != tail) {
             // Set Qₗ₊₁
-            (ptr, head, tail) = construct_level(forest, l, ptr, head, tail);
+            (ptr, head, tail) = process_level_queue(forest, l, ptr, head, tail);
             // Increment level
             l += 1;
         }
     }
 
     // Construct a level in the forest of trees
-    function construct_level(Forest storage forest, uint256 level, bytes32 ptr, bytes32 head, bytes32 tail)
+    function process_level_queue(Forest storage forest, uint256 level, bytes32 ptr, bytes32 head, bytes32 tail)
         internal
         returns (bytes32 nextPtr, bytes32 nextHead, bytes32 nextTail)
     {
@@ -159,7 +159,7 @@ library LibDDRV {
                 // this is a root range with no parent
                 // add range weight to level; add index to level table (roots)
                 forest.levels[level].weight += weight;
-                forest.levels[level].roots += j;
+                forest.levels[level].roots += 2 ** j;
             }
         }
         assembly {
@@ -201,13 +201,44 @@ library LibDDRV {
         uint256 srcLevel,
         Node storage currentParent,
         Node storage newParent
-    ) internal {
-        // find and remove the edge to the supplied range in currentParent
+    ) internal returns (Node storage _newParent) {
+        // if the current parent range is a zero range, then the supplied range
+        // is being added for the first time, and no operations on the current parent
+        // range are appropriate
+        Level storage nextLevel = forest.levels[srcLevel + 1];
+        if (currentParent.weight != 0) {
+            // find and remove the edge to the supplied range in currentParent
+            for (uint256 i = 0; i < currentParent.children.length; i++) {
+                if (currentParent.children[i].level == srcLevel && currentParent.children[i].index == range.index) {
+                    currentParent.children[i] = currentParent.children[currentParent.children.length - 1];
+                    currentParent.children.pop();
+                    break;
+                }
+            }
 
-        // decrement the weight of the currentParent node
+            // decrement the weight of the currentParent node
+            currentParent.weight -= range.weight;
+
+            // check if current parent is now a root range, updating roots and level weights
+            if (is_root_range(currentParent, nextLevel)) {
+                nextLevel.roots -= 2 ** currentParent.index;
+            }
+        }
+
+        // unset new parent range as a root if it is one currently
+        if (is_root_range(newParent, nextLevel)) {
+            nextLevel.roots -= 2 ** newParent.index;
+            nextLevel.weight -= newParent.weight;
+        }
 
         // insert range into newParent
-        insert_range(forest, range, srcLevel, newParent);
+        _newParent = insert_range(forest, range, srcLevel, newParent);
+
+        // set new parent range as a root if it is one now
+        if (is_root_range(_newParent, nextLevel)) {
+            nextLevel.roots += 2 ** _newParent.index;
+            nextLevel.weight += _newParent.weight;
+        }
     }
 
     function new_queue() internal returns (bytes32 ptr, bytes32 head, bytes32 tail) {
@@ -255,19 +286,31 @@ library LibDDRV {
         }
     }
 
-
     function insert_element(Forest storage forest, uint256 index, uint256 newWeight) external {
-
+        // TODO revert if element already exists
+        update_element(forest, index, newWeight);
     }
 
     // TODO(can this take a list of elements?)
     // TODO b-factor
     // TODO: can one enqueue 2 levels above or does this mess up the ordering
     // Update an element's weight in the forest of trees
-    function update_element(Forest storage forest, uint256 index, uint256 newWeight) external {
+    function update_element(Forest storage forest, uint256 index, uint256 newWeight) public {
         // Set up an in memory queue object
         (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue();
+        _update_element(forest, index, newWeight, ptr, head, tail)        ;
+        update_levels(forest, ptr, head, tail);
+    }
 
+    function _update_element(
+        Forest storage forest,
+        uint256 index,
+        uint256 newWeight,
+        bytes32 ptr,
+        bytes32 head,
+        bytes32 tail
+    ) internal {
+        // TODO revert if weight is same
         Node storage elt = forest.levels[0].ranges[index];
 
         uint256 oldWeight = elt.weight;
@@ -276,7 +319,10 @@ library LibDDRV {
         elt.weight = newWeight;
 
         // get the current range index
-        uint256 j = floor_ilog(oldWeight) + 1;
+        uint256 j = 0;
+        if (oldWeight > 0) {
+            j = floor_ilog(oldWeight) + 1;
+        }
         Node storage currentParent = forest.levels[1].ranges[j];
 
         // update the forest weight
@@ -287,26 +333,27 @@ library LibDDRV {
         forest.levels[0].weight -= oldWeight;
         forest.levels[0].weight += newWeight;
 
-        // TODO inc/dec weight if moving to/from root range
-        if (newWeight < 2 ** (j - 1) || (2 ** j) <= newWeight) {
-            // newWeight does not fall into the same parent range
-            // change the parent for this element
-            uint256 k = floor_ilog(newWeight) + 1;
-            Node storage newParent = forest.levels[1].ranges[k];
-            // move_range(forest, elt, currentParent, newParent); // TODO commented out this line to get it to compile
-            Node storage newRange = insert_range(forest, elt, 0, 1, k);
+        // handle current parent, i.e. the parent range index != 0
+        if (j != 0) {
+            // enqueue the current parent range for update if it's not a zero range
+            enqueue_range(ptr, head, tail, j, currentParent);
 
-            enqueue_range(ptr, head, tail, k, newRange);
-        } else {
-            // set the new weight of the element
+            // TODO (gas): these ops are effectively reversed in move_range below if
+            // the range is being updated
             currentParent.weight += newWeight;
             currentParent.weight -= oldWeight;
         }
 
-        // enqueue the current range for an update
-        enqueue_range(ptr, head, tail, j, currentParent);
+        if (j == 0 || newWeight < 2 ** (j - 1) || (2 ** j) <= newWeight) {
+            // parent range is changing if
+            //  the current parent is a zero range
+            //  the updated weight does not belong to the current parent
+            uint256 k = floor_ilog(newWeight) + 1;
+            Node storage newParent = forest.levels[1].ranges[k];
+            newParent = move_range(forest, elt, 0, currentParent, newParent);
 
-        update_levels(forest, ptr, head, tail);
+            enqueue_range(ptr, head, tail, k, newParent);
+        }
     }
 
     function generate(Forest storage forest, uint256 seed) external view returns (uint256) {
@@ -348,6 +395,41 @@ library LibDDRV {
         return bucket_rejection(forest, l, j, seed);
     }
 
+    /**
+     * preprocess
+     * 
+     * update weight of the element and forest
+     * update weight of parent range 
+     * enqueue update to parent range, 
+     * if changing parent, remove edge from parent
+     * if changing parent, update weight of new parent range
+     * if changing parent, add edge from new parent range
+     * if changing parent, enqueue update to new parent range
+     * 
+     * 
+     * insert element
+     * revert if element is already nonzero
+     * 
+     * update element
+     * 
+     * 
+     * TODO 
+     * 
+     * unify insert elt and update elt
+     * 
+     * preprocess externalL
+     * update element internal
+     * process levels
+     * 
+     * update element external:
+     * update element internal 
+     * process levels
+     * 
+     * process levels 
+     * agnostic to preprocess or update 
+     * we just process the queue
+     */
+
     function bucket_rejection(Forest storage forest, uint256 level, uint256 range, uint256 urv)
         internal
         view
@@ -378,6 +460,10 @@ library LibDDRV {
             }
         }
         return ((index >> ilog_n) + 1);
+    }
+
+    function is_root_range(Node storage range, Level storage level) internal view returns (bool) {
+        return (level.roots & (2 ** range.index)) != 0;
     }
 
     /*=================== MATH ===================*/
