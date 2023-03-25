@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 /*
- * Library for generating dynamically- weighted discrete random variates.
+ * Library for generating discrete random variates from a set of dynamically weighted elements.
  *
  * Copyright © 2023 Valorem Labs Inc.
  *
@@ -33,7 +33,7 @@ struct Node {
 struct Level {
     uint256 weight;
     uint256 roots;
-    mapping(uint256 => Node) ranges;
+    mapping(uint256 => Node) ranges; // QUESTION should we rename this to nodes, bc they are Elements on Level 0?
 }
 
 // A struct representing the whole forest

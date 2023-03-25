@@ -137,13 +137,19 @@ Feature: Dynamic Discrete Random Variates
 
     Scenario: C -- Update 1 Element, decrease weight, moves to lower range numbered-parent
         When I update Element 3 from weight 15 to weight 6
+
         Then The parent of Element 3 should now be Range R₃⁽¹⁾
+
         And The total weight of the Forest should be 91
-        And There should be 2 Levels in the Forest
-        And The weight of Level 1 should be 20
+        And There should still be 2 Levels in the Forest
+        And The weight of Level 1 should still be 20
         And The weight of Level 2 should be 71
+        And The weight of Range R₃⁽¹⁾ should be 31
+        And The weight of Range R₄⁽¹⁾ should be 40
+        And The weight of Range R₅⁽¹⁾ should still be 20
         And The weight of Range R₅⁽²⁾ should be 31
         And The weight of Range R₆⁽²⁾ should be 40
+
         And The Forest should have the following structure:
             | Element | E Weight | Parent | P Weight | Grandparent | GP Weight |
             | 2       | 5        | R₃⁽¹⁾  | (31)     | R₅⁽²⁾       | 31        |
@@ -382,6 +388,34 @@ Feature: Dynamic Discrete Random Variates
     Parent should R₅⁽¹⁾ with weight 50
     Grandparent should be R₆⁽²⁾ with weight XYZ
     Great Grandparent should be R₇⁽³⁾ with weight XYZ
+
+    # Delete (implicit)
+
+    Scenario: Delete 1 Element, 1 parent dies, 1 grandparent dies
+        When I delete Element 2
+        Then The parent of Element 2 should be null
+        And The parent of Range R₃⁽¹⁾ should now be Range R₆⁽²⁾
+        And The total weight of the forest should be 102
+        And There should be 2 Levels in the Forest
+        And The weight of Level 1 should be 20
+        And The weight of Level 2 should be 82
+        And The weight of Range R₅⁽²⁾ should be 0
+        And The weight of Range R₆⁽²⁾ should be 82
+        And The Forest should have the following structure:
+            | Element | E Weight | Parent | P Weight | Grandparent | GP Weight |
+            | 5       | 5        | R₃⁽¹⁾  | (27)     | R₆⁽²⁾       | 82        |
+            | 6       | 6        | R₃⁽¹⁾  | (27)     | R₆⁽²⁾       | 82        |
+            | 7       | 7        | R₃⁽¹⁾  | (27)     | R₆⁽²⁾       | 82        |
+            | 8       | 6        | R₃⁽¹⁾  | (27)     | R₆⁽²⁾       | 82        |
+            | 1       | 10       | R₄⁽¹⁾  | (55)     | R₆⁽²⁾       | 82        |
+            | 3       | 15       | R₄⁽¹⁾  | (55)     | R₆⁽²⁾       | 82        |
+            | 9       | 10       | R₄⁽¹⁾  | (55)     | R₆⁽²⁾       | 82        |
+            | 10      | 10       | R₄⁽¹⁾  | (55)     | R₆⁽²⁾       | 82        |
+            | 11d     | 10       | R₄⁽¹⁾  | (55)     | R₆⁽²⁾       | 82        |
+
+    Scenario: Delete n Elements, decrease parent
+
+    Scenario: Delete n Elements, increase parent
 
     # Generate
 

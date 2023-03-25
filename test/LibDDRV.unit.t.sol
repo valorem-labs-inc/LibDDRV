@@ -11,6 +11,9 @@ contract LibDDRVUnitTest is Test {
     uint256[] internal seeds;
     uint256 SEED_COUNT = 1000;
 
+    /// @dev Convenience empty array for element Nodes without children
+    Edge[] internal none;
+
     function setUp() public {
         seeds.push(uint256(keccak256(abi.encode(0))));
         for (uint256 i = 1; i < SEED_COUNT; i++) {
@@ -235,7 +238,6 @@ contract LibDDRVUnitTest is Test {
         weights[8] = 10;
         weights[9] = 10;
         weights[10] = 10;
-
         LibDDRV.preprocess(weights, forest);
 
         // And The total weight of the Forest is 100
@@ -249,6 +251,21 @@ contract LibDDRVUnitTest is Test {
 
         // And The weight of Level 2 is 80
         assertEq(forest.levels[2].weight, 80, "Level 2 weight");
+
+        // And The weight of Range R₃⁽¹⁾ should be 25
+        assertEq(forest.levels[1].ranges[3].weight, 25, unicode"Range R₃⁽¹⁾ weight");
+
+        // And The weight of Range R₄⁽¹⁾ should be 55
+        assertEq(forest.levels[1].ranges[4].weight, 55, unicode"Range R₄⁽¹⁾ weight");
+
+        // And The weight of Range R₅⁽¹⁾ should be 20
+        assertEq(forest.levels[1].ranges[5].weight, 20, unicode"Range R₅⁽¹⁾ weight");
+
+        // And The weight of Range R₅⁽²⁾ should be 25
+        assertEq(forest.levels[2].ranges[5].weight, 25, unicode"Range R₅⁽²⁾ weight");
+
+        // And The weight of Range R₆⁽²⁾ should be 55
+        assertEq(forest.levels[2].ranges[6].weight, 55, unicode"Range R₆⁽²⁾ weight");
 
         // And The Forest has the following structure:
         //     | Element | E Weight | Parent | P Weight | Grandparent | GP Weight |
@@ -264,42 +281,85 @@ contract LibDDRVUnitTest is Test {
         //     | 11      | 10       | R₄⁽¹⁾  | (55)     | R₆⁽²⁾       | 55        |
         //     | 4       | 20       | R₅⁽¹⁾  | 20       |             |           |
 
-        // Check the weights of the parent Ranges on Level 1
-        assertEq(forest.levels[1].ranges[3].weight, 25, unicode"Range R₃⁽¹⁾ weight");
-        assertEq(forest.levels[1].ranges[4].weight, 55, unicode"Range R₄⁽¹⁾ weight");
-        assertEq(forest.levels[1].ranges[5].weight, 20, unicode"Range R₅⁽¹⁾ weight");
-
-        // Check the weights of the grandparent Ranges on Level 2
-        assertEq(forest.levels[2].ranges[5].weight, 25, unicode"Range R₅⁽²⁾ weight");
-        assertEq(forest.levels[2].ranges[6].weight, 55, unicode"Range R₆⁽²⁾ weight");
-
-        // Check the children of Range R₃⁽¹⁾
+        // Check the children of parent Range R₃⁽¹⁾
         assertEq(forest.levels[1].ranges[3].children.length, 5, unicode"Range R₃⁽¹⁾ children count");
-        assertEq(forest.levels[1].ranges[3].children[0].index, 2, unicode"Range R₃⁽¹⁾ child 1 index");
-        assertEq(forest.levels[1].ranges[3].children[1].index, 5, unicode"Range R₃⁽¹⁾ child 2 index");
-        assertEq(forest.levels[1].ranges[3].children[2].index, 6, unicode"Range R₃⁽¹⁾ child 3 index");
-        assertEq(forest.levels[1].ranges[3].children[3].index, 7, unicode"Range R₃⁽¹⁾ child 4 index");
-        assertEq(forest.levels[1].ranges[3].children[4].index, 8, unicode"Range R₃⁽¹⁾ child 5 index");
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[0]),
+            Node({index: 1, weight: 5, children: none}),
+            unicode"Range R₃⁽¹⁾ child 1"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[1]),
+            Node({index: 4, weight: 5, children: none}),
+            unicode"Range R₃⁽¹⁾ child 2"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[2]),
+            Node({index: 5, weight: 5, children: none}),
+            unicode"Range R₃⁽¹⁾ child 3"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[3]),
+            Node({index: 6, weight: 5, children: none}),
+            unicode"Range R₃⁽¹⁾ child 4"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[4]),
+            Node({index: 7, weight: 5, children: none}),
+            unicode"Range R₃⁽¹⁾ child 5"
+        );
 
-        // Check the children of Range R₄⁽¹⁾
+        // Check the children of parent Range R₄⁽¹⁾
         assertEq(forest.levels[1].ranges[4].children.length, 5, unicode"Range R₄⁽¹⁾ children count");
-        assertEq(forest.levels[1].ranges[4].children[0].index, 1, unicode"Range R₄⁽¹⁾ child 1 index");
-        assertEq(forest.levels[1].ranges[4].children[1].index, 3, unicode"Range R₄⁽¹⁾ child 2 index");
-        assertEq(forest.levels[1].ranges[4].children[2].index, 9, unicode"Range R₄⁽¹⁾ child 3 index");
-        assertEq(forest.levels[1].ranges[4].children[3].index, 10, unicode"Range R₄⁽¹⁾ child 4 index");
-        assertEq(forest.levels[1].ranges[4].children[4].index, 11, unicode"Range R₄⁽¹⁾ child 5 index");
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[0]),
+            Node({index: 0, weight: 10, children: none}),
+            unicode"Range R₄⁽¹⁾ child 1"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[1]),
+            Node({index: 2, weight: 15, children: none}),
+            unicode"Range R₄⁽¹⁾ child 2"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[2]),
+            Node({index: 8, weight: 10, children: none}),
+            unicode"Range R₄⁽¹⁾ child 3"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[3]),
+            Node({index: 9, weight: 10, children: none}),
+            unicode"Range R₄⁽¹⁾ child 4"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[4]),
+            Node({index: 10, weight: 10, children: none}),
+            unicode"Range R₄⁽¹⁾ child 5"
+        );
 
-        // Check the children of Range R₅⁽¹⁾
+        // Check the children of parent Range R₅⁽¹⁾
         assertEq(forest.levels[1].ranges[5].children.length, 1, unicode"Range R₅⁽¹⁾ children count");
-        assertEq(forest.levels[1].ranges[5].children[0].index, 0, unicode"Range R₅⁽¹⁾ child 1 index");
+        assertEq(
+            nodeFor(forest.levels[1].ranges[5].children[0]),
+            Node({index: 3, weight: 20, children: none}),
+            unicode"Range R₅⁽¹⁾ child 1"
+        );
 
-        // Check the children of Range R₅⁽²⁾
+        // Check the children of grandparent Range R₅⁽²⁾
         assertEq(forest.levels[2].ranges[5].children.length, 1, unicode"Range R₅⁽²⁾ children count");
-        assertEq(forest.levels[2].ranges[5].children[0].index, 0, unicode"Range R₅⁽²⁾ child 1 index");
+        assertEq(
+            nodeFor(forest.levels[2].ranges[5].children[0]),
+            Node({index: 3, weight: 25, children: new Edge[](5)}),
+            unicode"Range R₅⁽²⁾ child 1"
+        );
 
-        // Check the children of Range R₆⁽²⁾
+        // Check the children of grandparent Range R₆⁽²⁾
         assertEq(forest.levels[2].ranges[6].children.length, 1, unicode"Range R₆⁽²⁾ children count");
-        assertEq(forest.levels[2].ranges[6].children[0].index, 0, unicode"Range R₆⁽²⁾ child 1 index");
+        assertEq(
+            nodeFor(forest.levels[2].ranges[6].children[0]),
+            Node({index: 4, weight: 55, children: new Edge[](5)}),
+            unicode"Range R₆⁽²⁾ child 1"
+        );
 
         _;
     }
@@ -310,14 +370,35 @@ contract LibDDRVUnitTest is Test {
         LibDDRV.update_element(2, 6, forest);
 
         // Then The parent of Element 3 should now be Range R₃⁽¹⁾
-        // assertEq(forest.levels[0].ranges[2].elements[0], 2, "");
+        //
 
         // And The total weight of the Forest should be 91
-        // And There should be 2 Levels in the Forest
-        // And The weight of Level 1 should be 20
+        assertEq(forest.weight, 91, "Forest total weight");
+
+        // And There should still be 2 Levels in the Forest
+        //
+
+        // And The weight of Level 1 should still be 20
+        assertEq(forest.levels[0].weight, 20, "Level 1 weight");
+
         // And The weight of Level 2 should be 71
+        assertEq(forest.levels[1].weight, 71, "Level 2 weight");
+
+        // And The weight of Range R₃⁽¹⁾ should be 31
+        assertEq(forest.levels[1].ranges[3].weight, 31, unicode"Range R₃⁽¹⁾ weight");
+
+        // And The weight of Range R₄⁽¹⁾ should be 40
+        assertEq(forest.levels[1].ranges[4].weight, 40, unicode"Range R₄⁽¹⁾ weight");
+
+        // And The weight of Range R₅⁽¹⁾ should still be 20
+        assertEq(forest.levels[1].ranges[5].weight, 20, unicode"Range R₅⁽¹⁾ weight");
+
         // And The weight of Range R₅⁽²⁾ should be 31
+        assertEq(forest.levels[2].ranges[5].weight, 31, unicode"Range R₅⁽²⁾ weight");
+
         // And The weight of Range R₆⁽²⁾ should be 40
+        assertEq(forest.levels[2].ranges[6].weight, 40, unicode"Range R₆⁽²⁾ weight");
+
         // And The Forest should have the following structure:
         //     | Element | E Weight | Parent | P Weight | Grandparent | GP Weight |
         //     | 2       | 5        | R₃⁽¹⁾  | (31)     | R₅⁽²⁾       | 31        |
@@ -331,6 +412,104 @@ contract LibDDRVUnitTest is Test {
         //     | 10      | 10       | R₄⁽¹⁾  | (40)     | R₆⁽²⁾       | 40        |
         //     | 11      | 10       | R₄⁽¹⁾  | (40)     | R₆⁽²⁾       | 40        |
         //     | 4       | 20       | R₅⁽¹⁾  | 20       |             |           |
+
+        // Check the children of parent Range R₃⁽¹⁾
+        assertEq(forest.levels[1].ranges[3].children.length, 6, unicode"Range R₃⁽¹⁾ children count");
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[0]),
+            Node({index: 1, weight: 5, children: none}),
+            unicode"Range R₃⁽¹⁾ child 1"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[1]),
+            Node({index: 4, weight: 5, children: none}),
+            unicode"Range R₃⁽¹⁾ child 2"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[2]),
+            Node({index: 5, weight: 5, children: none}),
+            unicode"Range R₃⁽¹⁾ child 3"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[3]),
+            Node({index: 6, weight: 5, children: none}),
+            unicode"Range R₃⁽¹⁾ child 4"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[4]),
+            Node({index: 7, weight: 5, children: none}),
+            unicode"Range R₃⁽¹⁾ child 5"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[5]),
+            Node({index: 2, weight: 6, children: none}),
+            unicode"Range R₃⁽¹⁾ child 6"
+        );
+
+        // Check the children of parent Range R₄⁽¹⁾
+        assertEq(forest.levels[1].ranges[4].children.length, 4, unicode"Range R₄⁽¹⁾ children count");
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[0]),
+            Node({index: 0, weight: 10, children: none}),
+            unicode"Range R₄⁽¹⁾ child 1"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[1]),
+            Node({index: 8, weight: 10, children: none}),
+            unicode"Range R₄⁽¹⁾ child 2"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[2]),
+            Node({index: 9, weight: 10, children: none}),
+            unicode"Range R₄⁽¹⁾ child 3"
+        );
+        assertEq(
+            nodeFor(forest.levels[1].ranges[3].children[3]),
+            Node({index: 10, weight: 10, children: none}),
+            unicode"Range R₄⁽¹⁾ child 4"
+        );
+
+        // Check the children of parent Range R₅⁽¹⁾
+        assertEq(forest.levels[1].ranges[5].children.length, 1, unicode"Range R₅⁽¹⁾ children count");
+        assertEq(
+            nodeFor(forest.levels[1].ranges[5].children[0]),
+            Node({index: 3, weight: 20, children: none}),
+            unicode"Range R₅⁽¹⁾ child 1"
+        );
+
+        // Check the children of grandparent Range R₅⁽²⁾
+        assertEq(forest.levels[2].ranges[5].children.length, 1, unicode"Range R₅⁽²⁾ children count");
+        assertEq(
+            nodeFor(forest.levels[2].ranges[5].children[0]),
+            Node({index: 3, weight: 25, children: new Edge[](6)}),
+            unicode"Range R₅⁽²⁾ child 1"
+        );
+
+        // Check the children of grandparent Range R₆⁽²⁾
+        assertEq(forest.levels[2].ranges[6].children.length, 1, unicode"Range R₆⁽²⁾ children count");
+        assertEq(
+            nodeFor(forest.levels[2].ranges[6].children[0]),
+            Node({index: 4, weight: 55, children: new Edge[](4)}),
+            unicode"Range R₆⁽²⁾ child 1"
+        );
+    }
+
+    /// @dev Assertion helper for Node struct. Note this only checks children.length, not the actual
+    function assertEq(Node memory a, Node memory b, string memory message) internal {
+        assertEq(a.index, b.index, message);
+        assertEq(a.weight, b.weight, message);
+        assertEq(a.children.length, b.children.length, message);
+    }
+
+    /// @dev Assertion helper for Edge struct. TODO TBD if needed
+    function assertEq(Edge memory a, Edge memory b, string memory message) internal {
+        assertEq(a.level, b.level, message);
+        assertEq(a.index, b.index, message);
+    }
+
+    /// @dev Finds the Node to which a given Edge connects.
+    function nodeFor(Edge memory edge) internal view returns (Node memory) {
+        return forest.levels[edge.level].ranges[edge.index];
     }
 
     /*//////////////////////////////////////////////////////////////
