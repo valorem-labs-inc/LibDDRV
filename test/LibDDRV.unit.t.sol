@@ -385,18 +385,23 @@ contract LibDDRVUnitTest is Test {
         assertEq(forest.levels[1].weight, 71, "Level 2 weight");
 
         // And The weight of Range R₃⁽¹⁾ should be 31
+        assertEq(forest.levels[1].ranges[3].index, 3, unicode"Range R₃⁽¹⁾ index");
         assertEq(forest.levels[1].ranges[3].weight, 31, unicode"Range R₃⁽¹⁾ weight");
 
         // And The weight of Range R₄⁽¹⁾ should be 40
+        assertEq(forest.levels[1].ranges[4].index, 4, unicode"Range R₄⁽¹⁾ index");
         assertEq(forest.levels[1].ranges[4].weight, 40, unicode"Range R₄⁽¹⁾ weight");
 
         // And The weight of Range R₅⁽¹⁾ should still be 20
+        assertEq(forest.levels[1].ranges[5].index, 5, unicode"Range R₅⁽¹⁾ index");
         assertEq(forest.levels[1].ranges[5].weight, 20, unicode"Range R₅⁽¹⁾ weight");
 
         // And The weight of Range R₅⁽²⁾ should be 31
+        assertEq(forest.levels[2].ranges[5].index, 5, unicode"Range R₅⁽²⁾ index");
         assertEq(forest.levels[2].ranges[5].weight, 31, unicode"Range R₅⁽²⁾ weight");
 
         // And The weight of Range R₆⁽²⁾ should be 40
+        assertEq(forest.levels[2].ranges[6].index, 6, unicode"Range R₆⁽²⁾ index");
         assertEq(forest.levels[2].ranges[6].weight, 40, unicode"Range R₆⁽²⁾ weight");
 
         // And The Forest should have the following structure:
