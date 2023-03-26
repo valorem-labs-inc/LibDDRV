@@ -149,7 +149,7 @@ library LibDDRV {
             // TODO(Support expanded degree bound)
             if (range.children.length > 1) {
                 // check if parent range changes, move accordingly
-                nextTail = _update_range(forest, range, weight, level + 1, head, ptr, tail);
+                nextTail = _update_range(forest, range, weight, level + 1, nextHead, nextPtr, nextTail);
             } else {
                 console.log("root");
                 // this is a root range with no parent
@@ -190,7 +190,7 @@ library LibDDRV {
         return destRange;
     }
 
-    // Remove the supplied range fom the specified parent
+    // move the specified range from currentParent to newParent
     function move_range(
         Forest storage forest,
         Node storage range,
@@ -344,6 +344,7 @@ library LibDDRV {
         }
 
         Node storage currentParent = forest.levels[parentLevel].ranges[j];
+        nextTail = tail;
 
         if (j == 0 || newWeight < 2 ** (j - 1) || (2 ** j) <= newWeight) {
             // MOVE TO NEW PARENT
