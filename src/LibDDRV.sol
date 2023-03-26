@@ -137,7 +137,7 @@ library LibDDRV {
             // Get weight and range number
             uint256 weight = range.weight;
 
-            // range weight has already been updated when processing the below level. 
+            // range weight has already been updated when processing the below level.
             // used the stored index rather than calculating it to get its current index,
             // since we have not yet moved this range to the correct parent
             uint256 j = range.index; //floor_ilog(weight) + 1;
@@ -406,36 +406,36 @@ library LibDDRV {
 
     /**
      * preprocess
-     * 
+     *
      * update weight of the element and forest
-     * update weight of parent range 
-     * enqueue update to parent range, 
+     * update weight of parent range
+     * enqueue update to parent range,
      * if changing parent, remove edge from parent
      * if changing parent, update weight of new parent range
      * if changing parent, add edge from new parent range
      * if changing parent, enqueue update to new parent range
-     * 
-     * 
+     *
+     *
      * insert element
      * revert if element is already nonzero
-     * 
+     *
      * update element
-     * 
-     * 
-     * TODO 
-     * 
+     *
+     *
+     * TODO
+     *
      * unify insert elt and update elt
-     * 
+     *
      * preprocess externalL
      * update element internal
      * process levels
-     * 
+     *
      * update element external:
-     * update element internal 
+     * update element internal
      * process levels
-     * 
-     * process levels 
-     * agnostic to preprocess or update 
+     *
+     * process levels
+     * agnostic to preprocess or update
      * we just process the queue
      */
 
