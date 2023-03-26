@@ -136,7 +136,11 @@ library LibDDRV {
             }
             // Get weight and range number
             uint256 weight = range.weight;
-            uint256 j = floor_ilog(weight) + 1;
+
+            // range weight has already been updated when processing the below level. 
+            // used the stored index rather than calculating it to get its current index,
+            // since we have not yet moved this range to the correct parent
+            uint256 j = range.index; //floor_ilog(weight) + 1;
 
             console.log("level: %s", level);
             console.log("weight: %s", weight);
