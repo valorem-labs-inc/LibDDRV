@@ -100,9 +100,8 @@ contract LibDDRVUnitTest is Test {
         // total weight should be the sum
         assertEq(forest.weight, expectedWeight);
         assertEq(forest.levels[0].weight, expectedWeight);
-        console.log("assert l1 weight");
         // Should be zero, since we only add weight for root ranges
-        assertEq(forest.levels[1].weight, 0);
+        assertEq(forest.levels[1].weight, 0, "assert l1 weight");
 
         uint256 l1RangeIndex = LibDDRV.floor_ilog(7) + 1;
         uint256 l2RangeIndex = LibDDRV.floor_ilog(expectedWeight) + 1;
@@ -111,13 +110,11 @@ contract LibDDRVUnitTest is Test {
         console.log("l2 index %s", l2RangeIndex);
 
         // range weighs 22, and is not a root range
-        console.log("assert l1 index range weight");
-        assertEq(forest.levels[1].ranges[l1RangeIndex].weight, 22);
+        assertEq(forest.levels[1].ranges[l1RangeIndex].weight, 22, "assert l1 index range weight");
         assertEq(forest.levels[1].roots, 0);
 
         // range weighs 22, and is the only root range
-        console.log("assert l2 index range weight");
-        assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight);
+        assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight, "assert l2 index range weight");
         assertEq(forest.levels[2].roots, l2RangeIndex);
     }
 
@@ -197,16 +194,11 @@ contract LibDDRVUnitTest is Test {
         console.log("updating element");
 
         LibDDRV.update_element(forest, 0, 30);
-        console.log("l0 weight is 80");
-        assertEq(forest.levels[0].weight, 80);
-        console.log("first elt weight is 30");
-        assertEq(forest.levels[0].ranges[0].weight, 30);
-        console.log("second elt weight is 50");
-        assertEq(forest.levels[0].ranges[1].weight, 50);
-        console.log("forest weight is 80");
-        assertEq(forest.weight, 80);
-        console.log("R1,6 is 80");
-        assertEq(forest.levels[1].ranges[6].weight, 80);
+        assertEq(forest.levels[0].weight, 80, "l0 weight is 80");
+        assertEq(forest.levels[0].ranges[0].weight, 30, "first elt weight is 30");
+        assertEq(forest.levels[0].ranges[1].weight, 50, "second elt weight is 50");
+        assertEq(forest.weight, 80, "forest weight is 80");
+        assertEq(forest.levels[1].ranges[6].weight, 80, "R1,6 is 80");
     }
 
     function testGenerate_simple() public {
