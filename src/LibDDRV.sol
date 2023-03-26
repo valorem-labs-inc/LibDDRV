@@ -145,19 +145,11 @@ library LibDDRV {
             console.log("level: %s", level);
             console.log("weight: %s", weight);
             console.log("nextj: %s", j);
+
             // TODO(Support expanded degree bound)
             if (range.children.length > 1) {
-                Node storage destRange = insert_range(forest, range, level, level + 1, j);
-                nextTail = enqueue_range(nextPtr, nextHead, nextTail, j, destRange);
-
-                /* TODO: Delete range(?). An explicit call to deleteRange is made in the pseudo, but
-                it's unclear if this is to simply remove the weight of the range from the level, and
-                to remove the range from the level table. 
-                
-                If the range is actually deleted, then we would need to "migrate" the children to the next
-                level. So a range on level 2 could have e.g. 5 children on level 0. If this is the case, then
-                the algorithm, as written, would not terminate because of the conditioninal on this branch.
-                 */
+                // check if parent range changes, move accordingly
+                bytes32 nextTail = _update_range(forest, range, weight, level + 1, head, ptr, tail);
             } else {
                 console.log("root");
                 // this is a root range with no parent
@@ -302,7 +294,7 @@ library LibDDRV {
     function update_element(Forest storage forest, uint256 index, uint256 newWeight) public {
         // Set up an in memory queue object
         (bytes32 ptr, bytes32 head, bytes32 tail) = new_queue();
-        _update_element(forest, index, newWeight, ptr, head, tail)        ;
+        _update_element(forest, index, newWeight, ptr, head, tail);
         update_levels(forest, ptr, head, tail);
     }
 
@@ -338,7 +330,7 @@ library LibDDRV {
         bytes32 ptr,
         bytes32 head,
         bytes32 tail
-    ) internal {
+    ) internal returns (bytes32 nextTail) {
         // TODO revert if weight is same
         uint256 oldWeight = range.weight;
 
@@ -350,20 +342,11 @@ library LibDDRV {
         if (oldWeight > 0) {
             j = floor_ilog(oldWeight) + 1;
         }
-        Node storage currentParent = forest.levels[parentLevel].ranges[j];
-        
-        // handle current parent, i.e. the parent range index != 0
-        if (j != 0) {
-            // enqueue the current parent range for update if it's not a zero range
-            enqueue_range(ptr, head, tail, j, currentParent);
 
-            // TODO (gas): these ops are effectively reversed in move_range below if
-            // the range is being updated
-            currentParent.weight += newWeight;
-            currentParent.weight -= oldWeight;
-        }
+        Node storage currentParent = forest.levels[parentLevel].ranges[j];
 
         if (j == 0 || newWeight < 2 ** (j - 1) || (2 ** j) <= newWeight) {
+            // MOVE TO NEW PARENT
             // parent range is changing if
             //  the current parent is a zero range
             //  the updated weight does not belong to the current parent
@@ -371,7 +354,14 @@ library LibDDRV {
             Node storage newParent = forest.levels[parentLevel].ranges[k];
             newParent = move_range(forest, range, 0, currentParent, newParent);
 
-            enqueue_range(ptr, head, tail, k, newParent);
+            nextTail = enqueue_range(ptr, head, tail, k, newParent);
+        } else if (j != 0) {
+            // UPDATE CURRENT PARENT
+            // enqueue the current parent range for update if it's not a zero range
+            nextTail = enqueue_range(ptr, head, tail, j, currentParent);
+
+            currentParent.weight += newWeight;
+            currentParent.weight -= oldWeight;
         }
     }
 
