@@ -149,7 +149,7 @@ library LibDDRV {
             // TODO(Support expanded degree bound)
             if (range.children.length > 1) {
                 // check if parent range changes, move accordingly
-                bytes32 nextTail = _update_range(forest, range, weight, level + 1, head, ptr, tail);
+                nextTail = _update_range(forest, range, weight, level + 1, head, ptr, tail);
             } else {
                 console.log("root");
                 // this is a root range with no parent
