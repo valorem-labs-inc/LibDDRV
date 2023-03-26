@@ -162,8 +162,8 @@ library LibDDRV {
                 console.log("root");
                 // this is a root range with no parent
                 // add range weight to level; add index to level table (roots)
+                set_root_range(range, forest.levels[level]);
                 forest.levels[level].weight += weight;
-                forest.levels[level].roots += 2 ** j;
             }
         }
         assembly {
@@ -225,13 +225,13 @@ library LibDDRV {
 
             // check if current parent is now a root range, updating roots and level weights
             if (is_root_range(currentParent, nextLevel)) {
-                nextLevel.roots -= 2 ** currentParent.index;
+                unset_root_range(currentParent, nextLevel);
             }
         }
 
         // unset new parent range as a root if it is one currently
         if (is_root_range(newParent, nextLevel)) {
-            nextLevel.roots -= 2 ** newParent.index;
+            unset_root_range(newParent, nextLevel);
             nextLevel.weight -= newParent.weight;
         }
 
@@ -240,7 +240,7 @@ library LibDDRV {
 
         // set new parent range as a root if it is one now
         if (is_root_range(_newParent, nextLevel)) {
-            nextLevel.roots += 2 ** _newParent.index;
+            set_root_range(_newParent, nextLevel);
             nextLevel.weight += _newParent.weight;
         }
     }
@@ -481,8 +481,17 @@ library LibDDRV {
         return ((index >> ilog_n) + 1);
     }
 
+    // TODO: these should likely all be inlined
     function is_root_range(Node storage range, Level storage level) internal view returns (bool) {
         return (level.roots & (2 ** range.index)) != 0;
+    }
+
+    function set_root_range(Node storage range, Level storage level) internal {
+        level.roots |= (2 ** range.index);
+    }
+
+    function unset_root_range(Node storage range, Level storage level) internal {
+        level.roots &= ~(2 ** range.index);
     }
 
     /*=================== MATH ===================*/
