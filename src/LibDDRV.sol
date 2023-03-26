@@ -315,16 +315,6 @@ library LibDDRV {
 
         uint256 oldWeight = elt.weight;
 
-        // update leaf/element weight
-        elt.weight = newWeight;
-
-        // get the current range index
-        uint256 j = 0;
-        if (oldWeight > 0) {
-            j = floor_ilog(oldWeight) + 1;
-        }
-        Node storage currentParent = forest.levels[1].ranges[j];
-
         // update the forest weight
         forest.weight -= oldWeight;
         forest.weight += newWeight;
@@ -333,6 +323,31 @@ library LibDDRV {
         forest.levels[0].weight -= oldWeight;
         forest.levels[0].weight += newWeight;
 
+        _update_range(forest, elt, newWeight, 1, ptr, head, tail);
+    }
+
+    function _update_range(
+        Forest storage forest,
+        Node storage range,
+        uint256 newWeight,
+        uint256 parentLevel,
+        bytes32 ptr,
+        bytes32 head,
+        bytes32 tail
+    ) internal {
+        // TODO revert if weight is same
+        uint256 oldWeight = range.weight;
+
+        // update leaf/element weight
+        range.weight = newWeight;
+
+        // get the current range index
+        uint256 j = 0;
+        if (oldWeight > 0) {
+            j = floor_ilog(oldWeight) + 1;
+        }
+        Node storage currentParent = forest.levels[parentLevel].ranges[j];
+        
         // handle current parent, i.e. the parent range index != 0
         if (j != 0) {
             // enqueue the current parent range for update if it's not a zero range
@@ -349,8 +364,8 @@ library LibDDRV {
             //  the current parent is a zero range
             //  the updated weight does not belong to the current parent
             uint256 k = floor_ilog(newWeight) + 1;
-            Node storage newParent = forest.levels[1].ranges[k];
-            newParent = move_range(forest, elt, 0, currentParent, newParent);
+            Node storage newParent = forest.levels[parentLevel].ranges[k];
+            newParent = move_range(forest, range, 0, currentParent, newParent);
 
             enqueue_range(ptr, head, tail, k, newParent);
         }
