@@ -21,7 +21,11 @@ contract LibDDRVUnitTest is Test {
         }
     }
 
-    /*======================== UTILS ========================*/
+    /*//////////////////////////////////////////////////////////////
+    //  Utilities
+    //////////////////////////////////////////////////////////////*/
+
+    /// @dev Logs forest information to the console
     function logForest(Forest storage f) internal view {
         console.log("forest weight: %s", f.weight);
         for (uint256 level = 0; level < 10; level++) {
@@ -42,7 +46,7 @@ contract LibDDRVUnitTest is Test {
         }
     }
 
-    // Writes the range of values [start, end) to the weights array, starting at index
+    /// @dev Writes the range of values [start, end) to the weights array, starting at index
     function addRange(uint256 index, uint256 start, uint256 end, uint256[] memory weights)
         internal
         pure
@@ -54,7 +58,27 @@ contract LibDDRVUnitTest is Test {
         return weights;
     }
 
-    /*======================== TESTS ========================*/
+    /// @dev Assertion helper for Node struct. Note this only checks children.length, not the actual children.
+    function assertEq(Node memory a, Node memory b, string memory message) internal {
+        assertEq(a.index, b.index, message);
+        assertEq(a.weight, b.weight, message);
+        assertEq(a.children.length, b.children.length, message);
+    }
+
+    /// @dev Assertion helper for Edge struct. TODO TBD if needed.
+    function assertEq(Edge memory a, Edge memory b, string memory message) internal {
+        assertEq(a.level, b.level, message);
+        assertEq(a.index, b.index, message);
+    }
+
+    /// @dev Finds the Node to which a given Edge connects.
+    function nodeFor(Edge memory edge) internal view returns (Node memory) {
+        return forest.levels[edge.level].ranges[edge.index];
+    }
+
+    /*//////////////////////////////////////////////////////////////
+    //  Preprocess
+    //////////////////////////////////////////////////////////////*/
 
     function testPreprocess_simple() public {
         uint256[] memory weights = new uint256[](2);
@@ -253,18 +277,23 @@ contract LibDDRVUnitTest is Test {
         assertEq(forest.levels[2].weight, 80, "Level 2 weight");
 
         // And The weight of Range R₃⁽¹⁾ should be 25
+        assertEq(forest.levels[1].ranges[3].index, 3, unicode"Range R₃⁽¹⁾ index");
         assertEq(forest.levels[1].ranges[3].weight, 25, unicode"Range R₃⁽¹⁾ weight");
 
         // And The weight of Range R₄⁽¹⁾ should be 55
+        assertEq(forest.levels[1].ranges[4].index, 4, unicode"Range R₄⁽¹⁾ index");
         assertEq(forest.levels[1].ranges[4].weight, 55, unicode"Range R₄⁽¹⁾ weight");
 
         // And The weight of Range R₅⁽¹⁾ should be 20
+        assertEq(forest.levels[1].ranges[5].index, 5, unicode"Range R₅⁽¹⁾ index");
         assertEq(forest.levels[1].ranges[5].weight, 20, unicode"Range R₅⁽¹⁾ weight");
 
         // And The weight of Range R₅⁽²⁾ should be 25
+        assertEq(forest.levels[2].ranges[5].index, 5, unicode"Range R₅⁽²⁾ index");
         assertEq(forest.levels[2].ranges[5].weight, 25, unicode"Range R₅⁽²⁾ weight");
 
         // And The weight of Range R₆⁽²⁾ should be 55
+        assertEq(forest.levels[2].ranges[6].index, 6, unicode"Range R₆⁽²⁾ index");
         assertEq(forest.levels[2].ranges[6].weight, 55, unicode"Range R₆⁽²⁾ weight");
 
         // And The Forest has the following structure:
@@ -370,7 +399,7 @@ contract LibDDRVUnitTest is Test {
         LibDDRV.update_element(2, 6, forest);
 
         // Then The parent of Element 3 should now be Range R₃⁽¹⁾
-        //
+        // TODO
 
         // And The total weight of the Forest should be 91
         assertEq(forest.weight, 91, "Forest total weight");
@@ -499,23 +528,7 @@ contract LibDDRVUnitTest is Test {
         );
     }
 
-    /// @dev Assertion helper for Node struct. Note this only checks children.length, not the actual
-    function assertEq(Node memory a, Node memory b, string memory message) internal {
-        assertEq(a.index, b.index, message);
-        assertEq(a.weight, b.weight, message);
-        assertEq(a.children.length, b.children.length, message);
-    }
-
-    /// @dev Assertion helper for Edge struct. TODO TBD if needed
-    function assertEq(Edge memory a, Edge memory b, string memory message) internal {
-        assertEq(a.level, b.level, message);
-        assertEq(a.index, b.index, message);
-    }
-
-    /// @dev Finds the Node to which a given Edge connects.
-    function nodeFor(Edge memory edge) internal view returns (Node memory) {
-        return forest.levels[edge.level].ranges[edge.index];
-    }
+    // TODO convert remaining 17 Cucumber scenarios to Forge tests
 
     /*//////////////////////////////////////////////////////////////
     //  Generate
