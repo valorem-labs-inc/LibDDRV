@@ -22,9 +22,6 @@ contract LibDDRVUnitTest is Test {
     function logForest(Forest storage f) internal view {
         console.log("forest weight: %s", f.weight);
         for (uint256 level = 0; level < 10; level++) {
-            if (f.levels[level].weight == 0) {
-                continue;
-            }
             console.log("\t level %s weight: %s", level, f.levels[level].weight);
             console.log("\t level %s roots: %s", level, f.levels[level].roots);
             for (uint256 index = 0; index < 10; index++) {
@@ -97,11 +94,14 @@ contract LibDDRVUnitTest is Test {
 
         LibDDRV.preprocess(forest, weights);
 
+        logForest(forest);
+
         // total weight should be the sum
-        assertEq(forest.weight, expectedWeight);
-        assertEq(forest.levels[0].weight, expectedWeight);
+        assertEq(forest.weight, expectedWeight, "assert forest weight");
+        assertEq(forest.levels[0].weight, expectedWeight, "assert l0 weight");
         // Should be zero, since we only add weight for root ranges
         assertEq(forest.levels[1].weight, 0, "assert l1 weight");
+        assertEq(forest.levels[2].weight, expectedWeight, "assert l2 weight");
 
         uint256 l1RangeIndex = LibDDRV.floor_ilog(7) + 1;
         uint256 l2RangeIndex = LibDDRV.floor_ilog(expectedWeight) + 1;
@@ -111,11 +111,15 @@ contract LibDDRVUnitTest is Test {
 
         // range weighs 22, and is not a root range
         assertEq(forest.levels[1].ranges[l1RangeIndex].weight, 22, "assert l1 index range weight");
-        assertEq(forest.levels[1].roots, 0);
+        assertEq(forest.levels[1].roots, 0, "assert no roots in l1");
+        // assert children for l1 range
+        assertEq(forest.levels[1].ranges[l1RangeIndex].children.length, 4, "assert l1 index range children length");
 
         // range weighs 22, and is the only root range
         assertEq(forest.levels[2].ranges[l2RangeIndex].weight, expectedWeight, "assert l2 index range weight");
-        assertEq(forest.levels[2].roots, l2RangeIndex);
+        assertEq(forest.levels[2].roots, l2RangeIndex, "assert roots in l2");
+        // assert children for l2 range
+        assertEq(forest.levels[2].ranges[l2RangeIndex].children.length, 1, "assert l2 index range children length");
     }
 
     function testPreprocess_twoTrees() public {
