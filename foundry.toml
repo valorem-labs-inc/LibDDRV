@@ -4,10 +4,13 @@ remappings = ['forge-std/=lib/forge-std/src/', 'solmate/=lib/solmate/src/']
 [profile.ci.fuzz]
 runs = 10_000
 
+[fuzz]
+runs = 10
+
 [invariant]
-runs = 1_000
+runs = 10
 depth = 15
-fail_on_revert = false
+fail_on_revert = true
 dictionary_weight = 80
 include_storage = true
 include_push_bytes = true

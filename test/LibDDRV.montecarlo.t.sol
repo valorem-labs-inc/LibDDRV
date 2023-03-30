@@ -50,7 +50,7 @@ contract LibDDRVMonteCarloTest is Test {
             emit log_named_uint("Element", i);
             emit log_named_uint("Weight", elements[i]);
             emit log_named_uint("Total Weight", totalWeight);
-            emit log_named_uint("Expected P", expectedProbability);
+            emit log_named_uint("Expected P(x)", expectedProbability);
             emit log_string("---");
         }
 
