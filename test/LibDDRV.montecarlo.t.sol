@@ -39,7 +39,7 @@ contract LibDDRVMonteCarloTest is Test {
             totalWeight += element;
             elements[i] = element;
 
-            LibDDRV.insert_element(i, element, forest);
+            LibDDRV.insert_element(forest, i, element);
         }
 
         // Calculate approximate expected probabilities.
