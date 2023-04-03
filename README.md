@@ -2,25 +2,18 @@
 
 ![Github Actions](https://github.com/valorem-labs-inc/LibDDRV/workflows/CI/badge.svg)
 
-A library for generating dynamically weighted discrete probability mass 
-function random variates in solidity, given a source of uniform randomness.
+Library for generating discrete random variates from a set of dynamically weighted elements in Solidity.
 
 Based on [this paper](https://kuscholarworks.ku.edu/bitstream/handle/1808/7224/MVN03.dynamic_rv_gen.pdf).
 
-The algorithm preprocesses a list of weights into a forest of trees, and then 
-traverses that forest to generate these random numbers in sub-linear time.
+The algorithm preprocesses a list of weighted elements into a forest of trees data structure, and then 
+traverses that forest to generate a random variate from the discrete distribution in sublinear time.
+Critically, the library supports inserting, updating, and deleting elements from the forest.
+
+_more to come_
 
 ## Getting Started
 
-Click "Use this template" on [GitHub](https://github.com/foundry-rs/forge-template) to create a new repository with this repo as the initial state.
+## Contributing
 
-Or, if your repo already exists, run:
-```sh
-forge init
-forge build
-forge test
-```
-
-## Development
-
-This project uses [Foundry](https://getfoundry.sh). See the [book](https://book.getfoundry.sh/getting-started/installation.html) for instructions on how to install and use Foundry.
+## Security
